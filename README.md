@@ -14,7 +14,7 @@
 
 
 ## Disclaimer 
-The automation of Discord Accounts also known as self-bots is a violation of Discord Terms of Service & Community Guidelines and will result in your account(s) being terminated. Discretion is adviced. I will not be responsible for your actions. Read about Discord [Terms Of service](https://discord.com/terms) and [Community Guidelines](https://discord.com/guidelines) here.
+The automation of Discord Accounts also known as self-bots is a violation of Discord Terms of Service & Community Guidelines and will result in your account(s) being terminated. Discretion is adviced. I will not be responsible for your actions. Read about Discord [Terms Of Service](https://discord.com/terms) and [Community Guidelines](https://discord.com/guidelines) here.
 
 
 ## **Features**:
