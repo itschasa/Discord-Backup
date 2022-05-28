@@ -5,9 +5,11 @@
     <img src="https://img.shields.io/github/downloads/ItsChasa/Discord-Backup/total?style=flat&logo=appveyor">
     <img src="https://img.shields.io/github/stars/ItsChasa/Discord-Backup?style=flat&logo=appveyor">
     <img src="https://img.shields.io/github/forks/ItsChasa/Discord-Backup?style=flat&logo=appveyor">
+    <br>
+    <img src="https://github.com/ItsChasa/Discord-Backup/blob/main/img/backup-demo.gif">
 </div>
 
-![backup-demo](https://github.com/ItsChasa/Discord-Backup/blob/main/img/backup-demo.gif)
+
 
 ## Support + Community
 [Discord Server](https://chasa.wtf/discord) | [Telegram Chat](https://chasa.wtf/telegram) | [Website](https://chasa.wtf/)
