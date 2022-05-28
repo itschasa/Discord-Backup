@@ -1,0 +1,22 @@
+# OPTIONS
+# light_red
+# dark_red
+# yellow
+# dark_blue
+# light_blue
+# dark_cyan
+# light_cyan
+# green
+# purple
+# pink
+# gray
+# black
+colour: purple
+
+
+# group chat backup:
+# if last message is older than _ seconds, dont create invite:
+# format: seconds
+# set to 0 to disable it
+# default: 1209600 (2 weeks)
+group_chat_msg: 1209600
