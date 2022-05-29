@@ -1,0 +1,6 @@
+requests
+PyYAML
+pycryptodome
+pypiwin32
+easygui
+colorama
