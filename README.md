@@ -36,6 +36,26 @@ You will have to do this yourself:
 - Restore Avatar, Banner and Bio
 
 
+## Installation
+### Using Binary EXE (Easier)
+1. Download the zip for your Operating System from [Releases](https://github.com/itschasa/Discord-Backup/releases)
+2. Unzip the contents into a folder
+3. Run the exe
+
+### Using Source
+1. Install [Python 3.9.10](https://www.python.org/downloads/release/python-3910/) (should work with other versions)
+2. Download source with the green `Code` button, then `Download ZIP`
+3. Unzip the contents into a folder
+4. Run in your command prompt:
+```
+pip install -r requirements.txt
+```
+5. Run main.py, either by double clicking or with command prompt (preferred way):
+```
+python main.py
+```
+
+
 ## Notes / FAQ:
 ### Restoring Servers + Group Chats + Server Folders
 Because of Discord's last resorts of using hCaptcha to stop people self-botting on Discord, I've decided its best to stop this program needing a captcha key.
@@ -49,6 +69,11 @@ Group Chat Invites are a bit scuffed on Discord.
 - However, Group Chat Invites will not work **if you leave** the Group Chat.
 - Meaning, if you leave the group chat after a backup, and before a term, then you won't be able to join that group chat back.
 
-
 ### Can I backup/restore an account which is already termed?
 No. You can't, and never will be able to. Stop asking this.
+
+### There's a feature I want to suggest.
+Suggest it in the issues tab. I will probably add it.
+
+### I keep getting an error, help!
+Make an issue in the issue tab, or ask in the Community Servers.
