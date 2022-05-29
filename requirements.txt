@@ -4,3 +4,4 @@ pycryptodome
 pypiwin32
 easygui
 colorama
+brotil
