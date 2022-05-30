@@ -5,6 +5,7 @@
     <img src="https://img.shields.io/github/downloads/ItsChasa/Discord-Backup/total?style=flat&logo=appveyor">
     <img src="https://img.shields.io/github/stars/ItsChasa/Discord-Backup?style=flat&logo=appveyor">
     <img src="https://img.shields.io/github/forks/ItsChasa/Discord-Backup?style=flat&logo=appveyor">
+    <img src="https://sonarcloud.io/api/project_badges/measure?project=itschasa_Discord-Backup&metric=ncloc"/>
     <br>
     <img src="https://github.com/ItsChasa/Discord-Backup/blob/main/img/backup-demo.gif">
 </div>
