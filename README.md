@@ -5,7 +5,7 @@
     <img src="https://img.shields.io/github/downloads/ItsChasa/Discord-Backup/total?style=flat">
     <img src="https://img.shields.io/github/stars/ItsChasa/Discord-Backup?style=flat">
     <img src="https://img.shields.io/github/forks/ItsChasa/Discord-Backup?style=flat">
-    <img src="https://api-ting.itschasa.repl.co/api/v1/github-lines?user=itschasa&repo=discord-backup">
+    <img src="https://sonarcloud.io/api/project_badges/measure?project=itschasa_Discord-Backup&metric=ncloc"/>
     <br>
     <img src="https://github.com/ItsChasa/Discord-Backup/blob/main/img/backup-demo.gif">
 </div>
