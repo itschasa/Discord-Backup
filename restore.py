@@ -359,7 +359,7 @@ class restore():
                 headers=self._headers("get", debugoptions=True, discordlocale=True, superprop=True, authorization=True)
             )
             if "You are being rate limited." in user_guilds_req.text:
-                self.c.warn(f"Rate Limited: {self.c.clnt.maincol}{r.json()['retry_after']} seconds{self.c.clnt.white}.")
+                self.c.warn(f"Rate Limited: {self.c.clnt.maincol}{user_guilds_req.json()['retry_after']} seconds{self.c.clnt.white}.")
                 time.sleep(user_guilds_req.json()["retry_after"])
             else:
                 break

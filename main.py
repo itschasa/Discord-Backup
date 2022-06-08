@@ -8,7 +8,7 @@
 import os
 os.system("cls")
 from startup import Setup
-clnt = Setup("Backup", "v1.0.1")
+clnt = Setup("Backup", "v1.0.2")
 
 # local imports
 import fetch_tokens, console, backup, restore
