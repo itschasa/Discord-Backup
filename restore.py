@@ -358,9 +358,9 @@ class restore():
             user_guilds_req = requests.get(f"https://discord.com/api/v9/users/@me/guilds",
                 headers=self._headers("get", debugoptions=True, discordlocale=True, superprop=True, authorization=True)
             )
-            if "You are being rate limited." in r.text:
+            if "You are being rate limited." in user_guilds_req.text:
                 self.c.warn(f"Rate Limited: {self.c.clnt.maincol}{r.json()['retry_after']} seconds{self.c.clnt.white}.")
-                time.sleep(r.json()["retry_after"])
+                time.sleep(user_guilds_req.json()["retry_after"])
             else:
                 break
         
