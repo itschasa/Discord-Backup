@@ -8,6 +8,8 @@
     <img src="https://sonarcloud.io/api/project_badges/measure?project=itschasa_Discord-Backup&metric=ncloc"/>
     <br>
     <img src="https://github.com/ItsChasa/Discord-Backup/blob/main/img/backup-demo.gif">
+    <br>
+    <p><i>⭐ star the repo pls <3</i></p>
 </div>
 
 
