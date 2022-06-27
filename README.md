@@ -26,17 +26,29 @@ The automation of Discord Accounts also known as self-bots is a violation of Dis
 ### Automatic
 These can be done by the program:
 - Backup Servers
+  - Save Server Invites
+- Backup DM History
+  - Save Users who have DMed you
 - Backup Group Chats
+  - Save Invites to Group Chats
 - Backup Avatar, Banner and Bio
+  - Saves 1 .txt and 2 .gif files
 - Backup + Restore Server Folders
-- Backup + Restore Relationships (Friends, Blocked, etc)
+  - Saves the Order, Colour and Name of your Folders
+- Backup + Restore Relationships
+  - Save Friends, Blocked, Outgoing and Incoming Friends
 - Auto-Backup on PC Startup
+  - On Startup, automatically backup your Discord Account
 - Colour Customisation
+  - 12 different colours to choose from
 ### Manual
 You will have to do this yourself:
 - Restore Servers
+  - You will have to join the Servers by clicking on an invite on Discord
 - Restore Group Chats
+  - You will have to join the Group Chats by clicking on an invite on Discord
 - Restore Avatar, Banner and Bio
+  - You will have to add these back through the User Profile menu
 
 
 ## Installation
@@ -57,6 +69,29 @@ pip install -r requirements.txt
 ```
 python main.py
 ```
+
+
+## How to Use
+1. Install using the instructions above and run the program.
+### Backing Up
+2. Select Option 1 to Backup a Discord Account.
+3. You can scan for tokens (Discord Accounts) on your PC, or you can enter it manually.
+  - If you aren't experienced with Discord, we recommend scanning your PC for tokens.
+  - However, if you don't want to let the program do that or the account didn't show up when scanning, you can enter the token manually.
+4. The program should now start to backup your account. This should take between 1m to 10m, depending on how many servers and group chats you are in.
+5. Once the program has finished, you will see an overview of the backup where you can see if any guilds failed to be backed up. At this point, the .bkup file would be saved in the `backups` folder.
+6. We also recommend you setup Auto-Backup, by selecting Option 3.
+
+### Restoring
+2. When you need to restore from a backup, select Option 2.
+3. Select Option 1: Restore Everything.
+4. You can now choose whether you want to restore your friends, outgoing, etc. Select `y` for yes or `n` for no on each one.
+5. A new window will open, prompting you to select the .bkup file. Find it, and select it.
+6. After you've checked the settings, select either `y` or `n`.
+7. Now, you can choose whether to scan for tokens, or enter manually. Same instructions from `3.` apply here.
+8. After you have entered your token, the program will start to restore your account. Note: It's likely that this process will take longer then backing up, depending on how many relationships you had.
+9. Like with the backing up, you will get an overview of what happened during the restoring process after it has finished.
+10. After you have joined all the servers, you can go back into the program, and select Option 2: Restore Server Folders, to restore the server folders. Or, you can do this process manually.
 
 
 ## Notes / FAQ:
