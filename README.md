@@ -88,7 +88,7 @@ python main.py
 4. You can now choose whether you want to restore your friends, outgoing, etc. Select `y` for yes or `n` for no on each one.
 5. A new window will open, prompting you to select the .bkup file. Find it, and select it.
 6. After you've checked the settings, select either `y` or `n`.
-7. Now, you can choose whether to scan for tokens, or enter manually. Same instructions from `3.` apply here.
+7. Now, you can choose whether to scan for tokens, or enter manually. Same instructions from `3.` in backing up apply here.
 8. After you have entered your token, the program will start to restore your account. Note: It's likely that this process will take longer then backing up, depending on how many relationships you had.
 9. Like with the backing up, you will get an overview of what happened during the restoring process after it has finished.
 10. After you have joined all the servers, you can go back into the program, and select Option 2: Restore Server Folders, to restore the server folders. Or, you can do this process manually.
