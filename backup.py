@@ -10,8 +10,8 @@ from datetime import datetime
 import console
 
 class backup():
-    def __init__(self, token, c: console.prnt) -> None:
-        self.backup_data = {}
+    def __init__(self, token, c: console.prnt, version) -> None:
+        self.backup_data = {"version": version}
         self.before = time.time()
         self.token = token
         self.fatal_error = False
@@ -27,6 +27,8 @@ class backup():
             self.guilds()
             print()
             self.group_chats()
+            print()
+            self.dm_history()
             
             if not os.path.exists('backups'):
                 os.makedirs('backups')
@@ -60,6 +62,7 @@ class backup():
             self.c.info(f"Blocked: {self.c.clnt.maincol}{len(self.blocked)}", indent=2)
             self.c.info(f"Incoming: {self.c.clnt.maincol}{len(self.incoming)}", indent=2)
             self.c.info(f"Outgoing: {self.c.clnt.maincol}{len(self.outgoing)}", indent=2)
+            self.c.info(f"DM Historys: {self.c.clnt.maincol}{len(self.dm_historys)}", indent=2)
             self.c.info(f"Time Elapsed: {self.c.clnt.maincol}{self._show_time(int(self.after - self.before))}")
 
 
@@ -108,10 +111,13 @@ class backup():
         return headers
     
     def _reverse_snowflake(self, snfk):
-        x = bin(int(snfk)).replace("0b", "")
-        for _ in range(64 - len(x)): x = "0" + x
-        x = (int(x[:42], 2) + 1420070400000) / 1000
-        return x
+        try:
+            x = bin(int(snfk)).replace("0b", "")
+            for _ in range(64 - len(x)): x = "0" + x
+            x = (int(x[:42], 2) + 1420070400000) / 1000
+            return x
+        except:
+            return 0
 
     def _show_time(self, time):
         time = int(time)
@@ -161,6 +167,7 @@ class backup():
                 break
         
         channels = r.json()
+        self.channels = channels
         new_channels = r.json()
         for chn in channels:
             if chn['type'] != 3:
@@ -368,3 +375,30 @@ class backup():
                 self.g_failed.append({"name": guild["name"], "id": guild["id"]})
 
         self.backup_data["guilds"] = self.guild_list
+    
+    def dm_history(self):
+        dms = []
+
+        for chan in self.channels:
+            if chan['type'] == 1:
+                dms.append(
+                    {
+                        "user_id": chan['recipients'][0]['id'],
+                        "last_message_id": chan['last_message_id'],
+                        "user": f"{chan['recipients'][0]['username']}#{chan['recipients'][0]['discriminator']}",
+                        "timestamp": int(self._reverse_snowflake(chan['last_message_id']))
+                    }
+                )
+
+        def extract_id(js):
+            try:
+                return int(js['last_message_id'])
+            except TypeError:
+                return 0
+
+        dms.sort(key=extract_id, reverse=True)
+                
+        self.backup_data['dm-history'] = dms
+        self.dm_historys = dms
+
+        self.c.success(f"Backed up: {self.c.clnt.maincol}Users DMed")

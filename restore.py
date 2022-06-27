@@ -8,11 +8,21 @@ import requests, base64, time, random
 
 import console
 
-read_me_msg = """Due to the current situation with captchas, I've decided that it would be easier to put all the invites into a server for you to join.\n\nCaptcha solvers right now are quite "on and off", meaning they sometimes work, and sometimes they don't.\n\nAlso note, if you just made this account, don't join all the servers at once. There's a good chance you will get locked.\n\nAfter you have joined all the servers, you can restore your original folders automatically, by using option 2 on the restore module.\nHowever, you can do this manually if you prefer.\n\n\n*Brought to you with <3 by github.com/itschasa/discord-backup :)*"""
+read_me_msg = """Due to the current situation with captchas, I've decided that it would be easier to put all the invites into a server for you to join.\n\nCaptcha solvers right now are quite "on and off", meaning they sometimes work, and sometimes they don't.\n\nAlso note, if you just made this account, don't join all the servers at once. There's a good chance you will get locked.\n\nAfter you have joined all the servers, you can restore your original folders automatically, by using option 2 on the restore module.\nHowever, you can do this manually if you prefer.\n\n\n*Brought to you with <3 by https://github.com/itschasa/discord-backup :)*"""
 
 class restore():
-    def __init__(self, token, c: console.prnt, restore_servers, restore_friends, restore_blocked, restore_outgoing, restore_incoming, restore_server_folders, restore_data) -> None:
+    def __init__(self, token, c: console.prnt, restore_friends, restore_blocked, restore_outgoing, restore_incoming, restore_server_folders, restore_data, version) -> None:
         self.restore_data = restore_data
+        if self.restore_data['version'] != version:
+            self.c.warn(f"This Backup wasn't done on the same version of this software. (b: {self.restore_data}, c:{version})")
+            self.c.warn(f"This could lead to unexpected errors or side effects.")
+            self.c.warn(f"It's recommended you change your software version to the same backup before continuing.")
+            self.c.inp(f"Are you sure you want to continue? ({self.c.clnt.maincol}y/n{self.c.clnt.white})", end=f"{self.c.clnt.white}")
+            warning_continue = input()
+            if warning_continue != "y":
+                self.fatal_error = "Chose to stop restore"
+                return
+
         self.token = token
         self.c = c
         self.fatal_error = False
@@ -32,8 +42,10 @@ class restore():
             print()
 
             self.user_data()
-            if restore_servers: self.servers()
+            self.servers()
             if restore_server_folders: self.folders()
+            self.c.warn("Sleeping 10 seconds")
+            time.sleep(10)
             self.relationships()
 
             self.after = time.time()
@@ -42,7 +54,7 @@ class restore():
             self.c.success(f"Restore Complete!")
             self.c.info(f"User Info + Avatar: {self.c.clnt.maincol}Done")
             self.c.info(f"Guild Folders: {self.c.clnt.maincol}{'Done' if restore_server_folders else 'Disabled'}")
-            self.c.info(f"Guilds: {self.c.clnt.maincol}{'Done' if restore_servers else 'Disabled'}")
+            self.c.info(f"Guilds: {self.c.clnt.maincol}Done")
             self.c.info(f"Relationships:")
             self.c.info(f"Friends: {self.c.clnt.maincol}{self.friends_added}/{len(self.friends)}", indent=2)
             self.c.info(f"Blocked: {self.c.clnt.maincol}{self.blocked_added}/{len(self.to_block)}", indent=2)
@@ -152,6 +164,12 @@ class restore():
                 "parent_id": None,
                 "name": "missing-guilds",
                 "type": 0
+            },
+            {
+                "id": "3",
+                "parent_id": None,
+                "name": "dm-history",
+                "type": 0
             }
         ]
         for folder in self.restore_data['guild_folders']:
@@ -196,9 +214,11 @@ class restore():
                 missing_guilds_chn_id = chn['id']
             elif chn['name'] == "group-chats":
                 group_chat_id = chn['id']
+            elif chn['name'] == "dm-history":
+                dm_history_id = chn['id']
             else:
                 folder_id = int(chn['name'].replace("folder-", ""))
-                cnt = [f"----\n**Folder Name: {self.restore_data['guild_folders'][folder_id]['name']}**\n----\n\n"]
+                cnt = [f"**Folder Name:** {self.restore_data['guild_folders'][folder_id]['name']}\n\n"]
 
                 for gld_id in self.restore_data['guild_folders'][folder_id]['guild_ids']:
                     invite_data = False
@@ -207,14 +227,14 @@ class restore():
                             invite_data = inv
                     if invite_data == False:
                         self.c.warn(f"Couldn't find invite for guild: {self.c.clnt.maincol}{gld_id}")
-                        missing_guilds_dat = f"Server was in Server Folders, but not in invites. ID: {gld_id}\n\n"
+                        missing_guilds_dat = f"ID: `{gld_id}` | Server was in Server Folders, but not in invites.\n\n"
                         if len(missing_guilds[-1]) + len(missing_guilds_dat) > 2000:
                             missing_guilds.append(missing_guilds_dat)
                         else:
                             missing_guilds[-1] += missing_guilds_dat
                     else:
                         if invite_data['invite-code'] != "Unable to create.":
-                            dat = f"**{invite_data['name']}**\nhttps://discord.gg/{invite_data['invite-code']}\n\n"
+                            dat = f"{invite_data['name']} (`{invite_data['id']}`)\nhttps://discord.gg/{invite_data['invite-code']}\n\n"
                             if len(cnt[-1]) + len(dat) > 2000:
                                 cnt.append(dat)
                             else:
@@ -222,24 +242,29 @@ class restore():
                             self.c.success(f"Found data for guild: {self.c.clnt.maincol}{invite_data['name']}")
                         else:
                             self.c.warn(f"Invite wasn't created for: {self.c.clnt.maincol}{invite_data['name']}")
-                            missing_guilds_dat = f"Invite wasn't made on backup (missing perms). ID: {gld_id} | Name: {invite_data['name']}\n\n"
+                            missing_guilds_dat = f"Name: `{invite_data['name']}` | ID: `{gld_id}` | Invite wasn't made on backup (missing perms). \n\n"
                             if len(missing_guilds[-1]) + len(missing_guilds_dat) > 2000:
                                 missing_guilds.append(missing_guilds_dat)
                             else:
                                 missing_guilds[-1] += missing_guilds_dat
 
                 for msg in cnt:
+                    self.c.warn("Sleeping 1 second")
+                    time.sleep(1)
                     if self._message(guild_id, chn['id'], msg):
                         self.c.success(f"Sent message in Channel: {self.c.clnt.maincol}#{chn['name']}")
                     else:
                         self.c.fail(f"Failed to send message in Channel: {self.c.clnt.maincol}#{chn['name']}")
-        
+                
+
         for msg in missing_guilds:
+            self.c.warn("Sleeping 1 second")
+            time.sleep(1)
             if self._message(guild_id, missing_guilds_chn_id, msg):
                 self.c.success(f"Sent message in Channel: {self.c.clnt.maincol}#missing-guilds")
             else:
                 self.c.fail(f"Failed to send message in Channel: {self.c.clnt.maincol}#missing-guilds")
-        
+
         
         group_chats = ["**Invites for Group Chats only last 7 days, so if your backup is old, then these might all be invalid.**\nAnother Note: Your old account must still be in these group chats. Being termed is ok. However, if your old account was kicked/left the group chats, then these invites will be invalid.\n\n"]
         for gc in self.restore_data['group-chats']:
@@ -250,10 +275,31 @@ class restore():
                 group_chats[-1] += dat
         
         for msg in group_chats:
+            self.c.warn("Sleeping 1 second")
+            time.sleep(1)
             if self._message(guild_id, group_chat_id, msg):
                 self.c.success(f"Sent message in Channel: {self.c.clnt.maincol}#group-chats")
             else:
                 self.c.fail(f"Failed to send message in Channel: {self.c.clnt.maincol}#group-chats")
+
+        dm_messages = ["**DM History**\nFormat: `user#tag | user_id | last_dm`\n(sorted most recent at top)\n\n"]
+        for dm in self.restore_data['dm-history']:
+            tmstmp = f"<t:{dm['timestamp']}>" if dm['timestamp'] != 0 else "Never DMed"
+            dat = f"{dm['user']} | `{dm['user_id']}` | {tmstmp}\n"
+            if len(dm_messages[-1]) + len(dat) > 2000:
+                dm_messages.append(dat)
+            else:
+                dm_messages[-1] += dat
+
+        for msg in dm_messages:
+            self.c.warn("Sleeping 1 second")
+            time.sleep(1)
+            if self._message(guild_id, dm_history_id, msg):
+                self.c.success(f"Sent message in Channel: {self.c.clnt.maincol}#dm-history")
+            else:
+                self.c.fail(f"Failed to send message in Channel: {self.c.clnt.maincol}#dm-history")
+        
+        
 
 
     def relationships(self):
@@ -337,7 +383,7 @@ class restore():
 
     def user_data(self):
         time_now = int(time.time())
-        f = open(f"pfp-{time_now}.png", "wb")
+        f = open(f"pfp-{time_now}.gif", "wb")
         f.write(base64.b64decode(self.restore_data['avatar-bytes']))
         f.close()
         self.c.success(f"Saved avatar: {self.c.clnt.maincol}pfp-{time_now}.png")

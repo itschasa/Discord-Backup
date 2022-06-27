@@ -8,7 +8,7 @@
 import os
 os.system("cls")
 from startup import Setup
-clnt = Setup("Backup", "v1.0.3")
+clnt = Setup("Backup", "v1.1.0")
 
 # local imports
 import fetch_tokens, console, backup, restore
@@ -93,7 +93,7 @@ while True:
                 
         
         if token_info != False:
-            bkup = backup.backup(token_info[0], c)
+            bkup = backup.backup(token_info[0], c, clnt.version)
             if bkup.fatal_error != False:
                 c.fail(bkup.fatal_error)
         if len(sys.argv) > 2:
@@ -118,8 +118,6 @@ while True:
             restore_server_folders = False
             start_restore = False
             if choice == 1:
-                c.inp(f"Restore Servers (creates server with invites)? ({clnt.maincol}y/n{clnt.white}) ", end=f"{clnt.white}")
-                restore_servers = True if input().lower() == "y" else False
                 c.inp(f"Restore Friends (add users who you had added)? ({clnt.maincol}y/n{clnt.white}) ", end=f"{clnt.white}")
                 restore_friends = True if input().lower() == "y" else False
                 c.inp(f"Restore Blocked (block users who you blocked)? ({clnt.maincol}y/n{clnt.white}) ", end=f"{clnt.white}")
@@ -139,7 +137,6 @@ while True:
                     c.success(f"Loaded backup data.")
                     print()
                     try:
-                        c.info(f"Restore Servers:{clnt.green if restore_servers else clnt.red} {restore_servers}{clnt.white} {'('+clnt.maincol+str(len(backup_data['guilds']))+clnt.white+')' if restore_servers else ''}")
                         c.info(f"Restore Friends:{clnt.green if restore_friends else clnt.red} {restore_friends}{clnt.white} {'('+clnt.maincol+str(len(backup_data['friends']))+clnt.white+')' if restore_friends else ''}")
                         c.info(f"Restore Blocked:{clnt.green if restore_blocked else clnt.red} {restore_blocked}{clnt.white} {'('+clnt.maincol+str(len(backup_data['blocked']))+clnt.white+')' if restore_blocked else ''}")
                         c.info(f"Restore Outgoing:{clnt.green if restore_outgoing else clnt.red} {restore_outgoing}{clnt.white} {'('+clnt.maincol+str(len(backup_data['outgoing']))+clnt.white+')' if restore_outgoing else ''}")
@@ -153,7 +150,7 @@ while True:
                             start_restore = True
             else:
                 restore_server_folders = True
-                restore_servers = restore_friends = restore_blocked = restore_outgoing = restore_incoming = False
+                restore_friends = restore_blocked = restore_outgoing = restore_incoming = False
                 try:
                     c.inp(f"Select backup file in new window.")
                     backupfile = fileopenbox(title="Load .bkup File", default="*.bkup")
@@ -194,7 +191,7 @@ while True:
                     c.inp("Token: ", end="")
                     token_info = [input(), ""]
                 
-                rstr = restore.restore(token_info[0], c, restore_servers, restore_friends, restore_blocked, restore_outgoing, restore_incoming, restore_server_folders, backup_data)
+                rstr = restore.restore(token_info[0], c, restore_friends, restore_blocked, restore_outgoing, restore_incoming, restore_server_folders, backup_data, clnt.version)
                 if rstr.fatal_error != False:
                     c.fail(rstr.fatal_error)
 
