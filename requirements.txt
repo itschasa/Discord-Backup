@@ -5,3 +5,4 @@ pypiwin32
 easygui
 colorama
 Brotli
+easyyaml
