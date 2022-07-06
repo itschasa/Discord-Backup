@@ -382,16 +382,20 @@ class restore():
             time.sleep(wait)
 
     def user_data(self):
-        time_now = int(time.time())
-        f = open(f"pfp-{time_now}.gif", "wb")
-        f.write(base64.b64decode(self.restore_data['avatar-bytes']))
-        f.close()
-        self.c.success(f"Saved avatar: {self.c.clnt.maincol}pfp-{time_now}.png")
+        avatar = "data:image/png;base64," + self.restore_data['avatar-bytes']
         
-        f = open(f"bio-{time_now}.txt", "w", encoding="utf-8")
-        f.write(self.restore_data['bio'])
-        f.close()
-        self.c.success(f"Saved bio: {self.c.clnt.maincol}bio-{time_now}.txt")
+        while True:
+            r = requests.patch(f"https://discord.com/api/v9/users/@me",
+                headers = self._headers("patch", debugoptions=True, discordlocale=True, superprop=True, authorization=True),
+                json = {"avatar": avatar, "bio": self.restore_data['bio']}
+            )
+            if "You are being rate limited." in r.text:
+                self.c.warn(f"Rate Limited: {self.c.clnt.maincol}{r.json()['retry_after']} seconds{self.c.clnt.white}.")
+                time.sleep(r.json()["retry_after"])
+            else:
+                break
+        self.c.success(f"Restored bio")
+        self.c.success(f"Restored avatar")
 
         if self.restore_data['banner-bytes'] != "":
             f = open(f"banner-{time_now}.gif", "wb")
