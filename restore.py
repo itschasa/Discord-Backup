@@ -282,10 +282,10 @@ class restore():
             else:
                 self.c.fail(f"Failed to send message in Channel: {self.c.clnt.maincol}#group-chats")
 
-        dm_messages = ["**DM History**\nFormat: `user#tag | user_id | last_dm`\n(sorted most recent at top)\n\n"]
+        dm_messages = ["**DM History**\nFormat: `user#tag | user ping | last_dm`\n(sorted most recent at top)\n\n"]
         for dm in self.restore_data['dm-history']:
             tmstmp = f"<t:{dm['timestamp']}>" if dm['timestamp'] != 0 else "Never DMed"
-            dat = f"{dm['user']} | `{dm['user_id']}` | {tmstmp}\n"
+            dat = f"{dm['user']} | <@{dm['user_id']}> | {tmstmp}\n"
             if len(dm_messages[-1]) + len(dat) > 2000:
                 dm_messages.append(dat)
             else:
