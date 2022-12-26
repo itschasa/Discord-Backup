@@ -11,7 +11,7 @@ import console
 read_me_msg = """Due to the current situation with captchas, I've decided that it would be easier to put all the invites into a server for you to join.\n\nCaptcha solvers right now are quite "on and off", meaning they sometimes work, and sometimes they don't.\n\nAlso note, if you just made this account, don't join all the servers at once. There's a good chance you will get locked.\n\nAfter you have joined all the servers, you can restore your original folders automatically, by using option 2 on the restore module.\nHowever, you can do this manually if you prefer.\n\n\n*Brought to you with <3 by https://github.com/itschasa/discord-backup :)*"""
 
 class restore():
-    def __init__(self, token, c: console.prnt, restore_friends, restore_blocked, restore_outgoing, restore_incoming, restore_server_folders, restore_data, version) -> None:
+    def __init__(self, token, c: console.prnt, restore_server_folders, restore_data, bot_token, version) -> None:
         self.restore_data = restore_data
         if self.restore_data['version'] != version:
             self.c.warn(f"This Backup wasn't done on the same version of this software. (b: {self.restore_data}, c:{version})")
@@ -28,39 +28,33 @@ class restore():
         self.fatal_error = False
         self.before = time.time()
 
-        self.restore_friends = restore_friends
-        self.restore_blocked = restore_blocked
-        self.restore_outgoing = restore_outgoing
-        self.restore_incoming = restore_incoming
+        self.bot_token = bot_token
         
         token_check = requests.get("https://discord.com/api/v9/users/@me", headers=self._headers("get", debugoptions=True, discordlocale=True, superprop=True, authorization=True))
         if token_check.status_code != 200:
-            self.fatal_error = "Invalid Token"
+            self.fatal_error = "Invalid User Token"
         else:
             self.user_me = token_check.json()
-            
-            print()
 
-            self.user_data()
-            self.servers()
-            if restore_server_folders: self.folders()
-            self.c.warn("Sleeping 10 seconds")
-            time.sleep(10)
-            self.relationships()
+            bot_token_check = requests.get("https://discord.com/api/v9/users/@me", headers=self._headers("get", authorization=True, token_override=f'Bot {self.bot_token}'))
+            if bot_token_check.status_code != 200:
+                self.fatal_error = "Invalid User Token"
+            else:
+                print()
 
-            self.after = time.time()
+                self.user_data()
+                self.servers()
+                if restore_server_folders: self.folders()
 
-            print()
-            self.c.success(f"Restore Complete!")
-            self.c.info(f"User Info + Avatar: {self.c.clnt.maincol}Done")
-            self.c.info(f"Guild Folders: {self.c.clnt.maincol}{'Done' if restore_server_folders else 'Disabled'}")
-            self.c.info(f"Guilds: {self.c.clnt.maincol}Done")
-            self.c.info(f"Relationships:")
-            self.c.info(f"Friends: {self.c.clnt.maincol}{self.friends_added}/{len(self.friends)}", indent=2)
-            self.c.info(f"Blocked: {self.c.clnt.maincol}{self.blocked_added}/{len(self.to_block)}", indent=2)
-            self.c.info(f"Incoming: {self.c.clnt.maincol}{self.incoming_added}/{len(self.incoming)}", indent=2)
-            self.c.info(f"Outgoing: {self.c.clnt.maincol}{self.outgoing_added}/{len(self.outgoing)}", indent=2)
-            self.c.info(f"Time Elapsed: {self.c.clnt.maincol}{self._show_time(int(self.after - self.before))}")
+                self.after = time.time()
+
+                print()
+                self.c.success(f"Restore Complete!")
+                self.c.info(f"User Info + Avatar: {self.c.clnt.maincol}Done")
+                self.c.info(f"Guild Folders: {self.c.clnt.maincol}{'Done' if restore_server_folders else 'Disabled'}")
+                self.c.info(f"Guilds: {self.c.clnt.maincol}Done")
+                self.c.info(f"Relationships: {self.c.clnt.maincol}Done")
+                self.c.info(f"Time Elapsed: {self.c.clnt.maincol}{self._show_time(int(self.after - self.before))}")
 
     def _show_time(self, time):
         time = int(time)
@@ -76,7 +70,7 @@ class restore():
         elif day == 0 and hour == 0 and minutes != 0: return "%d minutes %d seconds" % (minutes, seconds)
         else: return "%d seconds" % (seconds)
     
-    def _headers(self, method, superprop=False, debugoptions=False, discordlocale=False, authorization=False, origin=False, referer="https://discord.com/channels/@me", context=False):
+    def _headers(self, method, superprop=False, debugoptions=False, discordlocale=False, authorization=False, origin=False, referer="https://discord.com/channels/@me", context=False, token_override=False):
         headers = {
             "Accept": "*/*",
             "Accept-Encoding": "gzip, deflate, br",
@@ -100,7 +94,10 @@ class restore():
             headers["Origin"] = "https://discord.com"
 
         if authorization == True:
-            headers["Authorization"] = self.token
+            if token_override == False:
+                headers["Authorization"] = self.token
+            else:
+                headers["Authorization"] = token_override
         if origin != False:
             headers["Origin"] = origin
         if debugoptions == True:
@@ -170,12 +167,18 @@ class restore():
                 "parent_id": None,
                 "name": "dm-history",
                 "type": 0
+            },
+            {
+                "id": "4",
+                "parent_id": None,
+                "name": "friends",
+                "type": 0
             }
         ]
         for folder in self.restore_data['guild_folders']:
             channels.append(
                 {
-                    "id": str(self.restore_data['guild_folders'].index(folder) + 3),
+                    "id": str(self.restore_data['guild_folders'].index(folder) + 4),
                     "parent_id": None,
                     "name": f"folder-{self.restore_data['guild_folders'].index(folder)}",
                     "type": 0
@@ -216,6 +219,8 @@ class restore():
                 group_chat_id = chn['id']
             elif chn['name'] == "dm-history":
                 dm_history_id = chn['id']
+            elif chn['name'] == "friends":
+                friend_chnl_id = chn['id']
             else:
                 folder_id = int(chn['name'].replace("folder-", ""))
                 cnt = [f"**Folder Name:** {self.restore_data['guild_folders'][folder_id]['name']}\n\n"]
@@ -299,87 +304,72 @@ class restore():
             else:
                 self.c.fail(f"Failed to send message in Channel: {self.c.clnt.maincol}#dm-history")
         
+        friend_msgs = ["**Friends/Relationships**\n\n"]
         
-
-
-    def relationships(self):
-        to_add = []
-        self.to_block = []
-        self.friends = []
-        self.friends_added = 0
-        self.outgoing = []
-        self.outgoing_added = 0
-        self.incoming = []
-        self.incoming_added = 0
-        self.blocked_added = 0
-
-        if self.restore_friends:
-            to_add.extend(self.restore_data['friends'])
-            self.friends = self.restore_data['friends']
-        if self.restore_incoming:
-            to_add.extend(self.restore_data['incoming'])
-            self.incoming = self.restore_data['incoming']
-        if self.restore_outgoing:
-            to_add.extend(self.restore_data['outgoing'])
-            self.outgoing = self.restore_data['outgoing']
-        if self.restore_blocked:
-            self.to_block.extend(self.restore_data['blocked'])
-
-        for user in to_add:
-            while True:
-                r = requests.put(f"https://discord.com/api/v9/users/@me/relationships/{user}",
-                    headers = self._headers("put", debugoptions=True, discordlocale=True, superprop=True, authorization=True, context="eyJsb2NhdGlvbiI6IlVzZXIgUHJvZmlsZSJ9"),
-                    json={}
-                )
-                if "You are being rate limited." in r.text:
-                    self.c.warn(f"Rate Limited: {self.c.clnt.maincol}{r.json()['retry_after']} seconds{self.c.clnt.white}.")
-                    time.sleep(r.json()["retry_after"])
-                else:
-                    break
-            
-            if r.status_code == 204:
-                if user in self.outgoing:
-                    self.outgoing_added += 1
-                    self.c.success(f"Sent request: {self.c.clnt.maincol}{user}{self.c.clnt.white} ({self.c.clnt.maincol}Outgoing{self.c.clnt.white})")
-                elif user in self.incoming:
-                    self.incoming_added += 1
-                    self.c.success(f"Sent request: {self.c.clnt.maincol}{user}{self.c.clnt.white} ({self.c.clnt.maincol}Incoming{self.c.clnt.white})")
-                else:
-                    self.friends_added += 1
-                    self.c.success(f"Sent request: {self.c.clnt.maincol}{user}{self.c.clnt.white} ({self.c.clnt.maincol}Friend{self.c.clnt.white})")
+        if len(self.restore_data['friends']) != 0:
+            dat = f"\nFriends\n"
+            if len(friend_msgs[-1]) + len(dat) > 2000:
+                friend_msgs.append(dat)
             else:
-                if user in self.outgoing:
-                    self.c.fail(f"Couldn't send request: {self.c.clnt.maincol}{user}{self.c.clnt.white} ({self.c.clnt.maincol}Outgoing{self.c.clnt.white})")
-                elif user in self.incoming:
-                    self.c.fail(f"Couldn't send request: {self.c.clnt.maincol}{user}{self.c.clnt.white} ({self.c.clnt.maincol}Incoming{self.c.clnt.white})")
-                else:
-                    self.c.fail(f"Couldn't send request: {self.c.clnt.maincol}{user}{self.c.clnt.white} ({self.c.clnt.maincol}Friend{self.c.clnt.white})")
-
-            wait = random.randint(5,7)
-            self.c.warn(f"Sleeping {wait} seconds.")
-            time.sleep(wait)
-
-        for user in self.to_block:
-            while True: # get user from id
-                r = requests.put(f"https://discord.com/api/v9/users/@me/relationships/{user}",
-                    headers = self._headers("put", debugoptions=True, discordlocale=True, superprop=True, authorization=True, context="eyJsb2NhdGlvbiI6IlVzZXIgUHJvZmlsZSJ9"),
-                    json={"type":2}
-                )
-                if "You are being rate limited." in r.text:
-                    self.c.warn(f"Rate Limited: {self.c.clnt.maincol}{r.json()['retry_after']} seconds{self.c.clnt.white}.")
-                    time.sleep(int(r.json()["retry_after"]) / 1000)
-                else:
-                    break
+                friend_msgs[-1] += dat
             
-            if r.status_code == 204:
-                self.c.success(f"Blocked: {self.c.clnt.maincol}{user}{self.c.clnt.white}")
-                self.blocked_added += 1
+            for dm in self.restore_data['friends']:
+                dat = f"<@{dm}> | {self._get_user_info(dm)}\n"
+                if len(friend_msgs[-1]) + len(dat) > 2000:
+                    friend_msgs.append(dat)
+                else:
+                    friend_msgs[-1] += dat
+        
+        if len(self.restore_data['incoming']) != 0:
+            dat = f"\nIncoming\n"
+            if len(friend_msgs[-1]) + len(dat) > 2000:
+                friend_msgs.append(dat)
             else:
-                self.c.fail(f"Couldn't block: {self.c.clnt.maincol}{user}{self.c.clnt.white}")
+                friend_msgs[-1] += dat
             
-            wait = random.randint(5,7)
-            self.c.warn(f"Sleeping {wait} seconds.")
-            time.sleep(wait)
+            for dm in self.restore_data['incoming']:
+                dat = f"<@{dm}> | {self._get_user_info(dm)}\n"
+                if len(friend_msgs[-1]) + len(dat) > 2000:
+                    friend_msgs.append(dat)
+                else:
+                    friend_msgs[-1] += dat
+
+        if len(self.restore_data['outgoing']) != 0:
+            dat = f"\nOutgoing\n"
+            if len(friend_msgs[-1]) + len(dat) > 2000:
+                friend_msgs.append(dat)
+            else:
+                friend_msgs[-1] += dat
+            
+            for dm in self.restore_data['outgoing']:
+                dat = f"<@{dm}> | {self._get_user_info(dm)}\n"
+                if len(friend_msgs[-1]) + len(dat) > 2000:
+                    friend_msgs.append(dat)
+                else:
+                    friend_msgs[-1] += dat
+
+        if len(self.restore_data['blocked']) != 0:
+            dat = f"\nBlocked\n"
+            if len(friend_msgs[-1]) + len(dat) > 2000:
+                friend_msgs.append(dat)
+            else:
+                friend_msgs[-1] += dat
+            
+            for dm in self.restore_data['blocked']:
+                dat = f"<@{dm}> | {self._get_user_info(dm)}\n"
+                if len(friend_msgs[-1]) + len(dat) > 2000:
+                    friend_msgs.append(dat)
+                else:
+                    friend_msgs[-1] += dat
+
+        for msg in friend_msgs:
+            self.c.warn("Sleeping 1 second")
+            time.sleep(1)
+            if self._message(guild_id, friend_chnl_id, msg):
+                self.c.success(f"Sent message in Channel: {self.c.clnt.maincol}#friends")
+            else:
+                self.c.fail(f"Failed to send message in Channel: {self.c.clnt.maincol}#friends")        
+        
 
     def user_data(self):
         time_now = int(time.time())
@@ -398,6 +388,25 @@ class restore():
             f.write(base64.b64decode(self.restore_data['banner-bytes']))
             f.close()
             self.c.success(f"Saved banner: {self.c.clnt.maincol}banner-{time_now}.gif")
+    
+    def _get_user_info(self, userid):
+        while True:
+            req = requests.get(f'https://discord.com/api/v9/users/{userid}',
+                headers={ # yeah.. discord bots require you not to use regular user agents, otherwise cf blocks you, weird shit lol
+                    'authorization' : f'Bot {self.bot_token}'
+                }
+            )
+            if "You are being rate limited." in req.text:
+                self.c.warn(f"Rate Limited: {self.c.clnt.maincol}{req.json()['retry_after']} seconds{self.c.clnt.white}.")
+                time.sleep(req.json()["retry_after"])
+            else:
+                if req.status_code != 200:
+                    self.c.fail(f"Couldn't fetch username: {self.c.clnt.maincol}{userid}{self.c.clnt.white} ({req.json()['message']})")
+                    return 'Error'
+                else:
+                    self.c.success(f"Fetched username: {self.c.clnt.maincol}{userid}{self.c.clnt.white}.")
+                    return f"{req.json()['username']}#{req.json()['discriminator']}"
+        
     
     def folders(self):
         while True:
