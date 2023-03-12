@@ -8,10 +8,10 @@
 import os
 os.system("cls")
 from startup import Setup
-clnt = Setup("Backup", "v1.1.1")
+clnt = Setup("Backup", "v1.1.2")
 
 # local imports
-import fetch_tokens, console, backup, restore
+import console, backup, restore
 c = console.prnt(clnt)
 
 # 3rd party imports
@@ -47,7 +47,8 @@ while True:
         token_info = False
         if account_id != None:
             c.info(f"Launching Auto-Backup on ID: {clnt.maincol}{account_id}")
-            account_id_b64 = base64.b64encode(str(account_id).encode()).decode()
+            account_id_b64 = base64.b64encode(str(account_id).encode()).decode().replace('=', '')
+            import fetch_tokens
             c.info(f"Scanning for tokens...")
             tokens = fetch_tokens.fetch()
             for tkn in tokens:
@@ -65,17 +66,19 @@ while True:
         else:
             c.inp(f"Scan for tokens? ({clnt.maincol}y/n{clnt.white}) ", end=clnt.white)
             if input().lower() == "y":
+                import fetch_tokens
                 c.info(f"Scanning for tokens...")
                 tokens = fetch_tokens.fetch()
                 if len(tokens) != 0:
+                    print()
                     while True:
                         c.info(f"Select which token you want to be auto-backed up:")
                         for tkn in tokens:
-                            print(f"{clnt.white}{tokens.index(tkn)}: {clnt.maincol}{tkn[1]}")
+                            print(f"{clnt.white}{tokens.index(tkn)}: {clnt.maincol}{tkn[1]}{clnt.white} from {clnt.maincol}{tkn[3]}")
                         print()
                         c.inp(f"Choice {clnt.maincol}(int) """, end=clnt.white)
                         try: tknchoice = int(input())
-                        except: c.fail(f"Invalid Choice")
+                        except ValueError: c.fail(f"Invalid Choice")
                         else:
                             try:
                                 token_selected = tokens[tknchoice]
@@ -141,20 +144,22 @@ while True:
                     c.success(f"Loaded server folders.")
                     start_restore = True
 
-            if start_restore == True:
+            if start_restore is True:
                 c.inp(f"Scan for tokens? ({clnt.maincol}y/n{clnt.white}) ({clnt.maincol}account to restore on to{clnt.white}) ", end=clnt.white)
                 if input().lower() == "y":
+                    import fetch_tokens
                     c.info(f"Scanning for tokens...")
                     tokens = fetch_tokens.fetch()
                     if len(tokens) != 0:
                         while True:
+                            print()
                             c.info(f"Select which token you want to be auto-backed up:")
                             for tkn in tokens:
-                                print(f"{clnt.white}{tokens.index(tkn)}: {clnt.maincol}{tkn[1]}")
+                                print(f"{clnt.white}{tokens.index(tkn)}: {clnt.maincol}{tkn[1]}{clnt.white} from {clnt.maincol}{tkn[3]}")
                             print()
                             c.inp(f"Choice {clnt.maincol}(int) """, end=clnt.white)
                             try: tknchoice = int(input())
-                            except: c.fail(f"Invalid Choice")
+                            except ValueError: c.fail(f"Invalid Choice")
                             else:
                                 try:
                                     token_selected = tokens[tknchoice]
@@ -184,17 +189,19 @@ while True:
         c.inp(f"By adding to startup, you agree that this program is allowed to search for tokens on your PC.")
         c.inp(f"Your Account Token does not leave this machine and is not sent to our servers. ({clnt.maincol}y/n{clnt.white}) ", end=f"{clnt.white}")
         if input().lower() == "y":
+            import fetch_tokens
             c.info(f"Scanning for tokens...")
             tokens = fetch_tokens.fetch()
             if len(tokens) != 0:
                 while True:
+                    print()
                     c.info(f"Select which token you want to be auto-backed up:")
                     for tkn in tokens:
-                        print(f"{clnt.white}{tokens.index(tkn)}: {clnt.maincol}{tkn[1]}")
+                        print(f"{clnt.white}{tokens.index(tkn)}: {clnt.maincol}{tkn[1]}{clnt.white} from {clnt.maincol}{tkn[3]}")
                     print()
                     c.inp(f"Choice {clnt.maincol}(int) """, end=clnt.white)
                     try: tknchoice = int(input())
-                    except: c.fail(f"Invalid Choice")
+                    except ValueError: c.fail(f"Invalid Choice")
                     else:
                         try:
                             token_selected = tokens[tknchoice]
@@ -243,7 +250,7 @@ Additionally, {clnt.maincol}there is a limit {clnt.white}(in config) {clnt.mainc
 Restore allows you to {clnt.maincol}'restore' your old account to a new account using a previous backup{clnt.white} (aka '.bkup' file).
 The module will do its best to make the new account identical to the old account.
 You do {clnt.maincol}NOT{clnt.white} need your old account token for this module.
-You only need the token of {clnt.maincol}the account you want to restore on to{clnt.white} (your new account).
+You only need the token of {clnt.maincol}the account you want to restore on to{clnt.white} (your new account), and a bot token (make one in the Discord Dev panel, google it).
 In the module, {clnt.maincol}OPTION 1 is restoring the usual stuff.{clnt.white} Friends, servers, etc.
 However, {clnt.maincol}OPTION 2 is only server folders,{clnt.white} because this version doesn't automatically join servers.""")
         print()

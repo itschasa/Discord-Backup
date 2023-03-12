@@ -8,7 +8,7 @@ import requests, base64, time, random
 
 import console
 
-read_me_msg = """Due to the current situation with captchas, I've decided that it would be easier to put all the invites into a server for you to join.\n\nCaptcha solvers right now are quite "on and off", meaning they sometimes work, and sometimes they don't.\n\nAlso note, if you just made this account, don't join all the servers at once. There's a good chance you will get locked.\n\nAfter you have joined all the servers, you can restore your original folders automatically, by using option 2 on the restore module.\nHowever, you can do this manually if you prefer.\n\n\n*Brought to you with <3 by https://github.com/itschasa/discord-backup :)*"""
+read_me_msg = """Due to the current situation with captchas, I've decided that it would be easier to put all the invites into a server for you to join.\n\nPublic Captcha Solvers right now are quite "on and off", meaning they sometimes work, and sometimes they don't.\n\nAfter you have joined all the servers, you can restore your original folders automatically, by using option 2 on the restore module.\nHowever, you can do this manually if you prefer.\n\n\n*Brought to you with <3 by https://github.com/itschasa/discord-backup :)*"""
 
 class restore():
     def __init__(self, token, c: console.prnt, restore_server_folders, restore_data, bot_token, version) -> None:
@@ -93,18 +93,18 @@ class restore():
             headers["Content-Type"] = "application/json"
             headers["Origin"] = "https://discord.com"
 
-        if authorization == True:
+        if authorization is True:
             if token_override == False:
                 headers["Authorization"] = self.token
             else:
                 headers["Authorization"] = token_override
         if origin != False:
             headers["Origin"] = origin
-        if debugoptions == True:
+        if debugoptions is True:
             headers["X-Debug-Options"] = "bugReporterEnabled"
-        if discordlocale == True:
+        if discordlocale is True:
             headers["X-Discord-Locale"] = "en-US"
-        if superprop == True:
+        if superprop is True:
             headers["X-Super-Properties"] = "eyJvcyI6IldpbmRvd3MiLCJicm93c2VyIjoiQ2hyb21lIiwiZGV2aWNlIjoiIiwic3lzdGVtX2xvY2FsZSI6ImVuLVVTIiwiYnJvd3Nlcl91c2VyX2FnZW50IjoiTW96aWxsYS81LjAgKFdpbmRvd3MgTlQgMTAuMDsgV2luNjQ7IHg2NCkgQXBwbGVXZWJLaXQvNTM3LjM2IChLSFRNTCwgbGlrZSBHZWNrbykgQ2hyb21lLzEwMC4wLjQ4OTYuMTI3IFNhZmFyaS81MzcuMzYiLCJicm93c2VyX3ZlcnNpb24iOiIxMDAuMC40ODk2LjEyNyIsIm9zX3ZlcnNpb24iOiIxMCIsInJlZmVycmVyIjoiIiwicmVmZXJyaW5nX2RvbWFpbiI6IiIsInJlZmVycmVyX2N1cnJlbnQiOiIiLCJyZWZlcnJpbmdfZG9tYWluX2N1cnJlbnQiOiIiLCJyZWxlYXNlX2NoYW5uZWwiOiJzdGFibGUiLCJjbGllbnRfYnVpbGRfbnVtYmVyIjoxMjY0NjIsImNsaWVudF9ldmVudF9zb3VyY2UiOm51bGx9"
         if context != False:
             headers["X-Context-Properties"] = context

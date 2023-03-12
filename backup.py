@@ -90,15 +90,15 @@ class backup():
             headers["Content-Type"] = "application/json"
             headers["Origin"] = "https://discord.com"
 
-        if authorization == True:
+        if authorization is True:
             headers["Authorization"] = self.token
         if origin != False:
             headers["Origin"] = origin
-        if debugoptions == True:
+        if debugoptions is True:
             headers["X-Debug-Options"] = "bugReporterEnabled"
-        if discordlocale == True:
+        if discordlocale is True:
             headers["X-Discord-Locale"] = "en-US"
-        if superprop == True:
+        if superprop is True:
             headers["X-Super-Properties"] = "eyJvcyI6IldpbmRvd3MiLCJicm93c2VyIjoiQ2hyb21lIiwiZGV2aWNlIjoiIiwic3lzdGVtX2xvY2FsZSI6ImVuLVVTIiwiYnJvd3Nlcl91c2VyX2FnZW50IjoiTW96aWxsYS81LjAgKFdpbmRvd3MgTlQgMTAuMDsgV2luNjQ7IHg2NCkgQXBwbGVXZWJLaXQvNTM3LjM2IChLSFRNTCwgbGlrZSBHZWNrbykgQ2hyb21lLzEwMC4wLjQ4OTYuMTI3IFNhZmFyaS81MzcuMzYiLCJicm93c2VyX3ZlcnNpb24iOiIxMDAuMC40ODk2LjEyNyIsIm9zX3ZlcnNpb24iOiIxMCIsInJlZmVycmVyIjoiIiwicmVmZXJyaW5nX2RvbWFpbiI6IiIsInJlZmVycmVyX2N1cnJlbnQiOiIiLCJyZWZlcnJpbmdfZG9tYWluX2N1cnJlbnQiOiIiLCJyZWxlYXNlX2NoYW5uZWwiOiJzdGFibGUiLCJjbGllbnRfYnVpbGRfbnVtYmVyIjoxMjY0NjIsImNsaWVudF9ldmVudF9zb3VyY2UiOm51bGx9"
         if context != False:
             headers["X-Context-Properties"] = context
