@@ -8,7 +8,7 @@
 import os
 os.system("cls")
 from startup import Setup
-clnt = Setup("Backup", "v1.1.2")
+clnt = Setup("Backup", "v1.1.3")
 
 # local imports
 import console, backup, restore
@@ -55,7 +55,7 @@ while True:
                 if str(tkn[0]).startswith(account_id_b64):
                     token_info = tkn
                     break
-            if token_info == False:
+            if token_info is False:
                 c.fail("Could not find valid token with the provided ID.")
                 c.fail("Exiting in 5 seconds...")
                 time.sleep(5)

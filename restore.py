@@ -86,7 +86,7 @@ class restore():
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36"
         }
 
-        if referer == False:
+        if referer is False:
             del headers["Referer"]
         
         if method != "get":
@@ -94,7 +94,7 @@ class restore():
             headers["Origin"] = "https://discord.com"
 
         if authorization is True:
-            if token_override == False:
+            if token_override is False:
                 headers["Authorization"] = self.token
             else:
                 headers["Authorization"] = token_override
@@ -230,7 +230,7 @@ class restore():
                     for inv in self.restore_data['guilds']:
                         if str(inv['id']) == str(gld_id):
                             invite_data = inv
-                    if invite_data == False:
+                    if invite_data is False:
                         self.c.warn(f"Couldn't find invite for guild: {self.c.clnt.maincol}{gld_id}")
                         missing_guilds_dat = f"ID: `{gld_id}` | Server was in Server Folders, but not in invites.\n\n"
                         if len(missing_guilds[-1]) + len(missing_guilds_dat) > 2000:

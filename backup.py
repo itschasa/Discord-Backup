@@ -83,7 +83,7 @@ class backup():
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36"
         }
 
-        if referer == False:
+        if referer is False:
             del headers["Referer"]
         
         if method != "get":
@@ -298,7 +298,7 @@ class backup():
                                 self.c.fail(f"Can't Create Invite in {self.c.clnt.maincol}#{channel['name']}{self.c.clnt.white} ({self.c.clnt.maincol}{error}/3{self.c.clnt.white})", indent=2)
                                 break
         
-        if done == False:
+        if done is False:
             for channel in channels:
                 if done != False or error >= retries:
                     break
@@ -360,7 +360,7 @@ class backup():
             else:
                 code, done = self._get_invite(guild)
                 
-            if done == False:
+            if done is False:
                 code = "Unable to create."
             
             self.guild_list.append({
