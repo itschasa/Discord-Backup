@@ -239,32 +239,9 @@ while True:
                 c.fail(f"No tokens were found on your system.")
     
     elif choice == 4:
-        c.info(f"""Option 1: {clnt.maincol}Backup{clnt.white}
-Backup allows you to {clnt.maincol}create a 'backup' of your account.{clnt.white}
-This will {clnt.maincol}create a file with the '.bkup'{clnt.white} containing data from that account.
-For example, your servers, friends, bio, avatar, blocked, and more.
-You can then {clnt.maincol}use this '.bkup' file{clnt.white} later on, when you lose your account, {clnt.maincol}to 'restore' your old account.{clnt.white}
-Additionally, {clnt.maincol}there is a limit {clnt.white}(in config) {clnt.maincol}for how recent the group chat was used,{clnt.white} for it to be backed up.""")
-        print()
-        c.info(f"""Option 2: {clnt.maincol}Restore{clnt.white}
-Restore allows you to {clnt.maincol}'restore' your old account to a new account using a previous backup{clnt.white} (aka '.bkup' file).
-The module will do its best to make the new account identical to the old account.
-You do {clnt.maincol}NOT{clnt.white} need your old account token for this module.
-You only need the token of {clnt.maincol}the account you want to restore on to{clnt.white} (your new account), and a bot token (make one in the Discord Dev panel, google it).
-In the module, {clnt.maincol}OPTION 1 is restoring the usual stuff.{clnt.white} Friends, servers, etc.
-However, {clnt.maincol}OPTION 2 is only server folders,{clnt.white} because this version doesn't automatically join servers.""")
-        print()
-        c.info(f"""Option 3: {clnt.maincol}Add to Startup{clnt.white}
-Add to Startup will allow you to {clnt.maincol}backup your account every time you turn on your PC.{clnt.white}
-This allows you to {clnt.maincol}never have to rely on an old, and potentially outdated backup,{clnt.white} if you do lose your account.
-However, {clnt.maincol}this module requires the program to scan for tokens on your PC,{clnt.white} something which you may not want.
-There is a disclaimer on the module to let you know what you are signing up for.
-We will {clnt.maincol}never 'grab' or scan for tokens{clnt.white} without your permission, it is something I am personally against with.""")
-        print()
-        c.info(f"Additional Support:")
-        for social in clnt.socials:
-            print(f"{social['name']}: {clnt.maincol}{social['link']} {clnt.white}({clnt.maincol}{social['updated']}{clnt.white})")
-        print()
+        c.info('Go to: https://github.com/itschasa/Discord-Backup#how-to-use')
+        c.info('For additional help, join the Discord Server: https://discord.gg/MUP5TSEPc4')
+        c.info("If it's invalid, go to https://chasa.wtf and click the Discord icon.")
     
     else:
         c.fail(f"Invalid Choice")

@@ -73,6 +73,7 @@ python main.py
 
 ## How to Use
 1. Install using the instructions above and run the program.
+
 ### Backing Up
 2. Select Option 1 to Backup a Discord Account.
 3. You can scan for tokens (Discord Accounts) on your PC, or you can enter it manually.
@@ -89,9 +90,14 @@ python main.py
 5. A new window will open, prompting you to select the .bkup file. Find it, and select it.
 6. After you've checked the settings, select either `y` or `n`.
 7. Now, you can choose whether to scan for tokens, or enter manually. Same instructions from `3.` in backing up apply here.
-8. After you have entered your token, the program will start to restore your account. Note: It's likely that this process will take longer then backing up, depending on how many relationships you had.
-9. Like with the backing up, you will get an overview of what happened during the restoring process after it has finished.
-10. After you have joined all the servers, you can go back into the program, and select Option 2: Restore Server Folders, to restore the server folders. Or, you can do this process manually.
+8. After you have entered your token, you need to enter a Bot Token. You can get one from the Discord Developer Portal.
+- a. Go to https://discord.com/developers/applications
+- b. Click `New Application` and enter a random name.
+- c. On the sidebar, click `Bot`, then `Add Bot`, and `Yes, do it!`
+- d. Click `Copy` (located next to `View Token`). The Bot Token is now in your clipboard!
+9. The program will start to restore your account. Note: It's likely that this process will take longer then backing up, depending on how many relationships you had.
+10. Like with the backing up, you will get an overview of what happened during the restoring process after it has finished.
+11. After you have joined all the servers, you can go back into the program, and select Option 2: Restore Server Folders, to restore the server folders. Or, you can do this process manually.
 
 
 ## Notes / FAQ:

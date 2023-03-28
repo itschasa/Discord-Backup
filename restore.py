@@ -43,6 +43,7 @@ class restore():
                 print()
 
                 self.user_data()
+                fav_gifs_msg = self.favourited_gifs()
                 self.servers()
                 if restore_server_folders: self.folders()
 
@@ -51,6 +52,7 @@ class restore():
                 print()
                 self.c.success(f"Restore Complete!")
                 self.c.info(f"User Info + Avatar: {self.c.clnt.maincol}Done")
+                self.c.info(f"Favourited GIFs: {self.c.clnt.maincol}{fav_gifs_msg}")
                 self.c.info(f"Guild Folders: {self.c.clnt.maincol}{'Done' if restore_server_folders else 'Disabled'}")
                 self.c.info(f"Guilds: {self.c.clnt.maincol}Done")
                 self.c.info(f"Relationships: {self.c.clnt.maincol}Done")
@@ -446,3 +448,20 @@ class restore():
             self.c.success(f"Restored Guild Folders")
         else:
             self.c.fail(f"Couldn't Restore Guild Folders: {self.c.clnt.maincol}{r.status_code}")
+    
+    def favourited_gifs(self):
+        if self.restore_data.get('settings') == None:
+            self.c.warn(f"Couldn't Find Favourite GIFs on Backup")
+            return "Wasn't on Backup"
+        else:
+            r = requests.patch(f"https://discord.com/api/v9/users/@me/settings-proto/2",
+                headers = self._headers("patch", debugoptions=True, discordlocale=True, superprop=True, authorization=True),
+                json = {"settings": self.restore_data['settings']}
+            )
+            if r.status_code == 200:
+                self.c.success(f"Restored Favourited GIFs")
+                return "Done"
+            else:
+                self.c.fail(f"Couldn't Restore Favourited GIFs: {r.status_code}")
+                return "Failed"
+            

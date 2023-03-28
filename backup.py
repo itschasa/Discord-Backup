@@ -24,11 +24,12 @@ class backup():
             self.user_me = token_check.json()
             self.user_info()
             self.relationships()
+            fav_gifs_msg = self.get_favourite_gifs()
+            self.dm_history()
             self.guilds()
             print()
             self.group_chats()
             print()
-            self.dm_history()
             
             if not os.path.exists('backups'):
                 os.makedirs('backups')
@@ -51,6 +52,7 @@ class backup():
             self.c.success(f"Backup Complete!")
             self.c.info(f"User Info + Avatar: {self.c.clnt.maincol}Done")
             self.c.info(f"Guild Folders: {self.c.clnt.maincol}Done")
+            self.c.info(f"Favourited GIFs: {self.c.clnt.maincol}Done")
             self.c.info(f"Guilds: {self.c.clnt.maincol}{guild1}/{guild2}")
             self.c.info(f"Group Chats: {self.c.clnt.maincol}{self.gc_success}/{self.gc_success + self.gc_fail}")
 
@@ -402,3 +404,13 @@ class backup():
         self.dm_historys = dms
 
         self.c.success(f"Backed up: {self.c.clnt.maincol}Users DMed")
+    
+    def get_favourite_gifs(self):
+        r = requests.get('https://discord.com/api/v9/users/@me/settings-proto/2', headers=self._headers("get", debugoptions=True, discordlocale=True, superprop=True, authorization=True))
+        if r.status_code == 200:
+            self.backup_data['settings'] = r.json()['settings']
+            self.c.success(f"Backed up: {self.c.clnt.maincol}Favourited GIFs")
+            return 'Done'
+        else:
+            self.c.fail(f"Couldn't back up: {self.c.clnt.maincol}Favourited GIFs ({r.status_code})")
+            return 'Failed'
