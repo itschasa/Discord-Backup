@@ -25,10 +25,11 @@ class backup():
             self.user_info()
             self.relationships()
             fav_gifs_msg = self.get_favourite_gifs()
-            self.dm_history()
             self.guilds()
             print()
             self.group_chats()
+            print()
+            self.dm_history()
             print()
             
             if not os.path.exists('backups'):
