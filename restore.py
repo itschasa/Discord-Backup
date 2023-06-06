@@ -4,41 +4,49 @@
 # License v3.0. A copy of this license is available at
 # https://www.gnu.org/licenses/agpl-3.0.en.html
 
-import requests, base64, time, random
+import base64
+import time
+import requests
 
 import console
+from main import request_client, colours
+from client_info import build_headers
 
-read_me_msg = """Due to the current situation with captchas, I've decided that it would be easier to put all the invites into a server for you to join.\n\nPublic Captcha Solvers right now are quite "on and off", meaning they sometimes work, and sometimes they don't.\n\nAfter you have joined all the servers, you can restore your original folders automatically, by using option 2 on the restore module.\nHowever, you can do this manually if you prefer.\n\n\n*Brought to you with <3 by https://github.com/itschasa/discord-backup :)*"""
+read_me_msg = """After you have joined all the servers, use option 2 on restore to get your server folders back!\n\nCoded with <3 by https://github.com/itschasa/discord-backup :)"""
 
 class restore():
     def __init__(self, token, c: console.prnt, restore_server_folders, restore_data, bot_token, version) -> None:
+        self.token = token
+        self.c = c
+        self.fatal_error = False
+        self.before = time.time()
+        self.bot_token = bot_token
         self.restore_data = restore_data
+
         if self.restore_data['version'] != version:
             self.c.warn(f"This Backup wasn't done on the same version of this software. (b: {self.restore_data}, c:{version})")
             self.c.warn(f"This could lead to unexpected errors or side effects.")
-            self.c.warn(f"It's recommended you change your software version to the same backup before continuing.")
-            self.c.inp(f"Are you sure you want to continue? ({self.c.clnt.maincol}y/n{self.c.clnt.white})", end=f"{self.c.clnt.white}")
+            self.c.warn(f"It's recommended you change your software version to the same version as the backup was done on before continuing.")
+            self.c.inp(f"Are you sure you want to continue? ({colours['main_colour']}y/n{colours['white']})", end=f"{colours['white']}")
             warning_continue = input()
             if warning_continue != "y":
                 self.fatal_error = "Chose to stop restore"
                 return
 
-        self.token = token
-        self.c = c
-        self.fatal_error = False
-        self.before = time.time()
-
-        self.bot_token = bot_token
-        
-        token_check = requests.get("https://discord.com/api/v9/users/@me", headers=self._headers("get", debugoptions=True, discordlocale=True, superprop=True, authorization=True))
+        token_check = request_client.get("https://discord.com/api/v9/users/@me", headers=build_headers("get", debugoptions=True, discordlocale=True, superprop=True, authorization=self.token, timezone=True))
         if token_check.status_code != 200:
             self.fatal_error = "Invalid User Token"
         else:
             self.user_me = token_check.json()
 
-            bot_token_check = requests.get("https://discord.com/api/v9/users/@me", headers=self._headers("get", authorization=True, token_override=f'Bot {self.bot_token}'))
+            bot_token_check = request_client.get("https://discord.com/api/v9/users/@me",
+                headers={
+                    'Authorization' : f'Bot {self.bot_token}',
+                    'User-Agent': 'discord.py'
+                }
+            )
             if bot_token_check.status_code != 200:
-                self.fatal_error = "Invalid User Token"
+                self.fatal_error = "Invalid Bot Token"
             else:
                 print()
 
@@ -51,12 +59,12 @@ class restore():
 
                 print()
                 self.c.success(f"Restore Complete!")
-                self.c.info(f"User Info + Avatar: {self.c.clnt.maincol}Done")
-                self.c.info(f"Favourited GIFs: {self.c.clnt.maincol}{fav_gifs_msg}")
-                self.c.info(f"Guild Folders: {self.c.clnt.maincol}{'Done' if restore_server_folders else 'Disabled'}")
-                self.c.info(f"Guilds: {self.c.clnt.maincol}Done")
-                self.c.info(f"Relationships: {self.c.clnt.maincol}Done")
-                self.c.info(f"Time Elapsed: {self.c.clnt.maincol}{self._show_time(int(self.after - self.before))}")
+                self.c.info(f"User Info + Avatar: {colours['main_colour']}Done")
+                self.c.info(f"Favourited GIFs: {colours['main_colour']}{fav_gifs_msg}")
+                self.c.info(f"Guild Folders: {colours['main_colour']}{'Done' if restore_server_folders else 'Disabled'}")
+                self.c.info(f"Guilds: {colours['main_colour']}Done")
+                self.c.info(f"Relationships: {colours['main_colour']}Done")
+                self.c.info(f"Time Elapsed: {colours['main_colour']}{self._show_time(int(self.after - self.before))}")
 
     def _show_time(self, time):
         time = int(time)
@@ -71,66 +79,20 @@ class restore():
         elif day == 0 and hour != 0: return "%d hours %d minutes" % (hour, minutes)
         elif day == 0 and hour == 0 and minutes != 0: return "%d minutes %d seconds" % (minutes, seconds)
         else: return "%d seconds" % (seconds)
-    
-    def _headers(self, method, superprop=False, debugoptions=False, discordlocale=False, authorization=False, origin=False, referer="https://discord.com/channels/@me", context=False, token_override=False):
-        headers = {
-            "Accept": "*/*",
-            "Accept-Encoding": "gzip, deflate, br",
-            "Accept-Language": "en-US,en;q=0.9",
-            "Cookie": "locale=en-GB",
-            "Referer": referer,
-            "Sec-Ch-Ua": '" Not A;Brand";v="99", "Chromium";v="100", "Google Chrome";v="100"',
-            "Sec-Ch-Ua-Mobile": "?0",
-            "Sec-Ch-Ua-Platform": '"Windows"',
-            "Sec-Fetch-Dest": "empty",
-            "Sec-Fetch-Mode": "cors",
-            "Sec-Fetch-Site": "same-origin",
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36"
-        }
-
-        if referer is False:
-            del headers["Referer"]
-        
-        if method != "get":
-            headers["Content-Type"] = "application/json"
-            headers["Origin"] = "https://discord.com"
-
-        if authorization is True:
-            if token_override is False:
-                headers["Authorization"] = self.token
-            else:
-                headers["Authorization"] = token_override
-        if origin != False:
-            headers["Origin"] = origin
-        if debugoptions is True:
-            headers["X-Debug-Options"] = "bugReporterEnabled"
-        if discordlocale is True:
-            headers["X-Discord-Locale"] = "en-US"
-        if superprop is True:
-            headers["X-Super-Properties"] = "eyJvcyI6IldpbmRvd3MiLCJicm93c2VyIjoiQ2hyb21lIiwiZGV2aWNlIjoiIiwic3lzdGVtX2xvY2FsZSI6ImVuLVVTIiwiYnJvd3Nlcl91c2VyX2FnZW50IjoiTW96aWxsYS81LjAgKFdpbmRvd3MgTlQgMTAuMDsgV2luNjQ7IHg2NCkgQXBwbGVXZWJLaXQvNTM3LjM2IChLSFRNTCwgbGlrZSBHZWNrbykgQ2hyb21lLzEwMC4wLjQ4OTYuMTI3IFNhZmFyaS81MzcuMzYiLCJicm93c2VyX3ZlcnNpb24iOiIxMDAuMC40ODk2LjEyNyIsIm9zX3ZlcnNpb24iOiIxMCIsInJlZmVycmVyIjoiIiwicmVmZXJyaW5nX2RvbWFpbiI6IiIsInJlZmVycmVyX2N1cnJlbnQiOiIiLCJyZWZlcnJpbmdfZG9tYWluX2N1cnJlbnQiOiIiLCJyZWxlYXNlX2NoYW5uZWwiOiJzdGFibGUiLCJjbGllbnRfYnVpbGRfbnVtYmVyIjoxMjY0NjIsImNsaWVudF9ldmVudF9zb3VyY2UiOm51bGx9"
-        if context != False:
-            headers["X-Context-Properties"] = context
-        
-        keyssorted = sorted(headers.keys(), key=lambda x:x.lower())
-        newheaders={}
-        for key in keyssorted:
-            newheaders[key] = headers[key]
-
-        return headers
 
     def _snowflake(self):
         return str(int(bin(int((time.time() * 1000) - 1420070400000)).replace("0b", "") + "0000000000000000000000", 2))
 
     def _message(self, guild, channel, content) -> bool:
-        headers = self._headers("post", debugoptions=True, discordlocale=True, superprop=True, authorization=True,
-                                    referer=f"https://discord.com/channels/{guild}/{channel}")
+        headers = build_headers("post", debugoptions=True, discordlocale=True, superprop=True, authorization=self.token,
+                                    referer=f"https://discord.com/channels/{guild}/{channel}", timezone=True)
         payload = {
             "content": content,
             "nonce": self._snowflake(),
             "tts": False
         }
         while True:
-            response = requests.post(f"https://discord.com/api/v9/channels/{channel}/messages",
+            response = request_client.post(f"https://discord.com/api/v9/channels/{channel}/messages",
                 headers=headers,
                 json=payload
             )
@@ -180,36 +142,50 @@ class restore():
         for folder in self.restore_data['guild_folders']:
             channels.append(
                 {
-                    "id": str(self.restore_data['guild_folders'].index(folder) + 4),
+                    "id": str(self.restore_data['guild_folders'].index(folder) + 5),
                     "parent_id": None,
                     "name": f"folder-{self.restore_data['guild_folders'].index(folder)}",
                     "type": 0
                 }
             )
         
-        imgdata = base64.b64encode(requests.get("https://i.imgur.com/b6B3Fbw.jpg").content).decode()
+        try:
+            imgdata = base64.b64encode(requests.get("https://i.imgur.com/b6B3Fbw.jpg").content).decode()
+            if len(imgdata) < 500:
+                raise Exception
+            else:
+                imgdata = "data:image/jpeg;base64," + imgdata
+        except:
+            imgdata = None
+
         payload = {
-            "channels": channels,
-            "guild_template_code": "FbwUwRp4j8Es",
-            "icon": f"data:image/jpeg;base64,{imgdata}",
             "name": "Backup Server",
+            "icon": imgdata,
+            "channels": channels,
             "system_channel_id": "0",
+            "guild_template_code": "2TffvPucqHkN",
         }
 
-        req = requests.post("https://discord.com/api/v9/guilds",
-            headers=self._headers("post", debugoptions=True, discordlocale=True, superprop=True, authorization=True),
+        req = request_client.post("https://discord.com/api/v9/guilds",
+            headers=build_headers("post", debugoptions=True, discordlocale=True, superprop=True, authorization=self.token, timezone=True, origin="https://discord.com"),
             json=payload
         )
-
-        guild_id = req.json()['id']
+        
+        try: guild_id = req.json()['id']
+        except:
+            self.c.fail(f"Failed to create guild: {req.status_code}")
+            self.c.fail(req.text)
+            self.fatal_error = "Failed to create guild"
+            return
+        
         missing_guilds_chn_id = None
         group_chat_id = None
         missing_guilds = [""]
 
         self.c.success("Created Guild")
 
-        guild_channels = requests.get(f"https://discord.com/api/v9/guilds/{guild_id}/channels",
-            headers=self._headers("get", debugoptions=True, discordlocale=True, superprop=True, authorization=True)
+        guild_channels = request_client.get(f"https://discord.com/api/v9/guilds/{guild_id}/channels",
+            headers=build_headers("get", debugoptions=True, discordlocale=True, superprop=True, authorization=self.token, timezone=True)
         ).json()
 
         for chn in guild_channels:
@@ -233,7 +209,7 @@ class restore():
                         if str(inv['id']) == str(gld_id):
                             invite_data = inv
                     if invite_data is False:
-                        self.c.warn(f"Couldn't find invite for guild: {self.c.clnt.maincol}{gld_id}")
+                        self.c.warn(f"Couldn't find invite for guild: {colours['main_colour']}{gld_id}")
                         missing_guilds_dat = f"ID: `{gld_id}` | Server was in Server Folders, but not in invites.\n\n"
                         if len(missing_guilds[-1]) + len(missing_guilds_dat) > 2000:
                             missing_guilds.append(missing_guilds_dat)
@@ -246,9 +222,9 @@ class restore():
                                 cnt.append(dat)
                             else:
                                 cnt[-1] += dat
-                            self.c.success(f"Found data for guild: {self.c.clnt.maincol}{invite_data['name']}")
+                            self.c.success(f"Found data for guild: {colours['main_colour']}{invite_data['name']}")
                         else:
-                            self.c.warn(f"Invite wasn't created for: {self.c.clnt.maincol}{invite_data['name']}")
+                            self.c.warn(f"Invite wasn't created for: {colours['main_colour']}{invite_data['name']}")
                             missing_guilds_dat = f"Name: `{invite_data['name']}` | ID: `{gld_id}` | Invite wasn't made on backup (missing perms). \n\n"
                             if len(missing_guilds[-1]) + len(missing_guilds_dat) > 2000:
                                 missing_guilds.append(missing_guilds_dat)
@@ -259,18 +235,18 @@ class restore():
                     self.c.warn("Sleeping 1 second")
                     time.sleep(1)
                     if self._message(guild_id, chn['id'], msg):
-                        self.c.success(f"Sent message in Channel: {self.c.clnt.maincol}#{chn['name']}")
+                        self.c.success(f"Sent message in Channel: {colours['main_colour']}#{chn['name']}")
                     else:
-                        self.c.fail(f"Failed to send message in Channel: {self.c.clnt.maincol}#{chn['name']}")
+                        self.c.fail(f"Failed to send message in Channel: {colours['main_colour']}#{chn['name']}")
                 
 
         for msg in missing_guilds:
             self.c.warn("Sleeping 1 second")
             time.sleep(1)
             if self._message(guild_id, missing_guilds_chn_id, msg):
-                self.c.success(f"Sent message in Channel: {self.c.clnt.maincol}#missing-guilds")
+                self.c.success(f"Sent message in Channel: {colours['main_colour']}#missing-guilds")
             else:
-                self.c.fail(f"Failed to send message in Channel: {self.c.clnt.maincol}#missing-guilds")
+                self.c.fail(f"Failed to send message in Channel: {colours['main_colour']}#missing-guilds")
 
         
         group_chats = ["**Invites for Group Chats only last 7 days, so if your backup is old, then these might all be invalid.**\nAnother Note: Your old account must still be in these group chats. Being termed is ok. However, if your old account was kicked/left the group chats, then these invites will be invalid.\n\n"]
@@ -285,9 +261,9 @@ class restore():
             self.c.warn("Sleeping 1 second")
             time.sleep(1)
             if self._message(guild_id, group_chat_id, msg):
-                self.c.success(f"Sent message in Channel: {self.c.clnt.maincol}#group-chats")
+                self.c.success(f"Sent message in Channel: {colours['main_colour']}#group-chats")
             else:
-                self.c.fail(f"Failed to send message in Channel: {self.c.clnt.maincol}#group-chats")
+                self.c.fail(f"Failed to send message in Channel: {colours['main_colour']}#group-chats")
 
         dm_messages = ["**DM History**\nFormat: `user#tag | user ping | last_dm`\n(sorted most recent at top)\n\n"]
         for dm in self.restore_data['dm-history']:
@@ -302,9 +278,9 @@ class restore():
             self.c.warn("Sleeping 1 second")
             time.sleep(1)
             if self._message(guild_id, dm_history_id, msg):
-                self.c.success(f"Sent message in Channel: {self.c.clnt.maincol}#dm-history")
+                self.c.success(f"Sent message in Channel: {colours['main_colour']}#dm-history")
             else:
-                self.c.fail(f"Failed to send message in Channel: {self.c.clnt.maincol}#dm-history")
+                self.c.fail(f"Failed to send message in Channel: {colours['main_colour']}#dm-history")
         
         friend_msgs = ["**Friends/Relationships**\n\n"]
         
@@ -368,9 +344,9 @@ class restore():
             self.c.warn("Sleeping 1 second")
             time.sleep(1)
             if self._message(guild_id, friend_chnl_id, msg):
-                self.c.success(f"Sent message in Channel: {self.c.clnt.maincol}#friends")
+                self.c.success(f"Sent message in Channel: {colours['main_colour']}#friends")
             else:
-                self.c.fail(f"Failed to send message in Channel: {self.c.clnt.maincol}#friends")        
+                self.c.fail(f"Failed to send message in Channel: {colours['main_colour']}#friends")        
         
 
     def user_data(self):
@@ -378,45 +354,51 @@ class restore():
         f = open(f"pfp-{time_now}.gif", "wb")
         f.write(base64.b64decode(self.restore_data['avatar-bytes']))
         f.close()
-        self.c.success(f"Saved avatar: {self.c.clnt.maincol}pfp-{time_now}.png")
+        self.c.success(f"Saved avatar: {colours['main_colour']}pfp-{time_now}.png")
         
         f = open(f"bio-{time_now}.txt", "w", encoding="utf-8")
         f.write(self.restore_data['bio'])
         f.close()
-        self.c.success(f"Saved bio: {self.c.clnt.maincol}bio-{time_now}.txt")
+        self.c.success(f"Saved bio: {colours['main_colour']}bio-{time_now}.txt")
 
         if self.restore_data['banner-bytes'] != "":
             f = open(f"banner-{time_now}.gif", "wb")
             f.write(base64.b64decode(self.restore_data['banner-bytes']))
             f.close()
-            self.c.success(f"Saved banner: {self.c.clnt.maincol}banner-{time_now}.gif")
+            self.c.success(f"Saved banner: {colours['main_colour']}banner-{time_now}.gif")
     
     def _get_user_info(self, userid):
         while True:
-            req = requests.get(f'https://discord.com/api/v9/users/{userid}',
-                headers={ # yeah.. discord bots require you not to use regular user agents, otherwise cf blocks you, weird shit lol
-                    'authorization' : f'Bot {self.bot_token}'
+            req = request_client.get(f'https://discord.com/api/v9/users/{userid}',
+                # seems like Cloudflare blocks requests that:
+                # 1) have a bot token
+                # 2) contain a browser user-agent
+                # probably to make sure bot devs identify what library they are using (for analytical purposes?)
+                
+                headers={
+                    'Authorization' : f'Bot {self.bot_token}',
+                    'User-Agent': 'discord.py'
                 }
             )
             if "You are being rate limited." in req.text:
-                self.c.warn(f"Rate Limited: {self.c.clnt.maincol}{req.json()['retry_after']} seconds{self.c.clnt.white}.")
+                self.c.warn(f"Rate Limited: {colours['main_colour']}{req.json()['retry_after']} seconds{colours['white']}.")
                 time.sleep(req.json()["retry_after"])
             else:
                 if req.status_code != 200:
-                    self.c.fail(f"Couldn't fetch username: {self.c.clnt.maincol}{userid}{self.c.clnt.white} ({req.json()['message']})")
+                    self.c.fail(f"Couldn't fetch username: {colours['main_colour']}{userid}{colours['white']} ({req.json()['message']})")
                     return 'Error'
                 else:
-                    self.c.success(f"Fetched username: {self.c.clnt.maincol}{userid}{self.c.clnt.white}.")
+                    self.c.success(f"Fetched username: {colours['main_colour']}{userid}{colours['white']}.")
                     return f"{req.json()['username']}#{req.json()['discriminator']}"
         
     
     def folders(self):
         while True:
-            user_guilds_req = requests.get(f"https://discord.com/api/v9/users/@me/guilds",
-                headers=self._headers("get", debugoptions=True, discordlocale=True, superprop=True, authorization=True)
+            user_guilds_req = request_client.get(f"https://discord.com/api/v9/users/@me/guilds",
+                headers=build_headers("get", debugoptions=True, discordlocale=True, superprop=True, authorization=self.token, timezone=True)
             )
             if "You are being rate limited." in user_guilds_req.text:
-                self.c.warn(f"Rate Limited: {self.c.clnt.maincol}{user_guilds_req.json()['retry_after']} seconds{self.c.clnt.white}.")
+                self.c.warn(f"Rate Limited: {colours['main_colour']}{user_guilds_req.json()['retry_after']} seconds{colours['white']}.")
                 time.sleep(user_guilds_req.json()["retry_after"])
             else:
                 break
@@ -434,12 +416,12 @@ class restore():
             data_to_send.append(tmp)
 
         while True:
-            r = requests.patch(f"https://discord.com/api/v9/users/@me/settings",
-                headers = self._headers("patch", debugoptions=True, discordlocale=True, superprop=True, authorization=True),
+            r = request_client.patch(f"https://discord.com/api/v9/users/@me/settings",
+                headers = build_headers("patch", debugoptions=True, discordlocale=True, superprop=True, authorization=self.token, timezone=True),
                 json = {"guild_folders": data_to_send}
             )
             if "You are being rate limited." in r.text:
-                self.c.warn(f"Rate Limited: {self.c.clnt.maincol}{r.json()['retry_after']} seconds{self.c.clnt.white}.")
+                self.c.warn(f"Rate Limited: {colours['main_colour']}{r.json()['retry_after']} seconds{colours['white']}.")
                 time.sleep(r.json()["retry_after"])
             else:
                 break
@@ -447,15 +429,15 @@ class restore():
         if r.status_code == 200:
             self.c.success(f"Restored Guild Folders")
         else:
-            self.c.fail(f"Couldn't Restore Guild Folders: {self.c.clnt.maincol}{r.status_code}")
+            self.c.fail(f"Couldn't Restore Guild Folders: {colours['main_colour']}{r.status_code}")
     
     def favourited_gifs(self):
         if self.restore_data.get('settings') == None:
             self.c.warn(f"Couldn't Find Favourite GIFs on Backup")
             return "Wasn't on Backup"
         else:
-            r = requests.patch(f"https://discord.com/api/v9/users/@me/settings-proto/2",
-                headers = self._headers("patch", debugoptions=True, discordlocale=True, superprop=True, authorization=True),
+            r = request_client.patch(f"https://discord.com/api/v9/users/@me/settings-proto/2",
+                headers = build_headers("patch", debugoptions=True, discordlocale=True, superprop=True, authorization=self.token, timezone=True),
                 json = {"settings": self.restore_data['settings']}
             )
             if r.status_code == 200:

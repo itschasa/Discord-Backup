@@ -10,7 +10,7 @@ import yaml
 class Config():
     "Ex: `config.threads`"
     def __init__(self) -> None:
-        args = yaml.safe_load(open("config.yml"))
+        data = yaml.safe_load(open("config.yml"))
         
-        for arg, val in args.items():
-            exec(f"self.{arg} = val")
+        self.colour = data['colour']
+        self.group_chat_msg = data['group_chat_msg']

@@ -4,10 +4,15 @@
 # License v3.0. A copy of this license is available at
 # https://www.gnu.org/licenses/agpl-3.0.en.html
 
-import base64, requests, time, json, os
+import base64
+import time
+import json
+import os
 from datetime import datetime
 
 import console
+from main import request_client, colours, config
+from client_info import build_headers
 
 class backup():
     def __init__(self, token, c: console.prnt, version) -> None:
@@ -17,14 +22,16 @@ class backup():
         self.fatal_error = False
         self.c = c
 
-        token_check = requests.get("https://discord.com/api/v9/users/@me", headers=self._headers("get", debugoptions=True, discordlocale=True, superprop=True, authorization=True))
+        token_check = request_client.get("https://discord.com/api/v9/users/@me",
+            headers=build_headers("get", debugoptions=True, discordlocale=True, superprop=True, authorization=self.token, timezone=True)
+        )
         if token_check.status_code != 200:
             self.fatal_error = "Invalid Token"
         else:
             self.user_me = token_check.json()
             self.user_info()
             self.relationships()
-            fav_gifs_msg = self.get_favourite_gifs()
+            self.get_favourite_gifs()
             self.guilds()
             print()
             self.group_chats()
@@ -51,67 +58,24 @@ class backup():
 
             print()
             self.c.success(f"Backup Complete!")
-            self.c.info(f"User Info + Avatar: {self.c.clnt.maincol}Done")
-            self.c.info(f"Guild Folders: {self.c.clnt.maincol}Done")
-            self.c.info(f"Favourited GIFs: {self.c.clnt.maincol}Done")
-            self.c.info(f"Guilds: {self.c.clnt.maincol}{guild1}/{guild2}")
-            self.c.info(f"Group Chats: {self.c.clnt.maincol}{self.gc_success}/{self.gc_success + self.gc_fail}")
+            self.c.info(f"User Info + Avatar: {colours['main_colour']}Done")
+            self.c.info(f"Guild Folders: {colours['main_colour']}Done")
+            self.c.info(f"Favourited GIFs: {colours['main_colour']}Done")
+            self.c.info(f"Guilds: {colours['main_colour']}{guild1}/{guild2}")
+            self.c.info(f"Group Chats: {colours['main_colour']}{self.gc_success}/{self.gc_success + self.gc_fail}")
 
-            if len(self.g_failed) != 0: self.c.warn(f"Failed Guilds:")
-            for guild in self.g_failed: self.c.warn(f"{guild['name']}", indent=2)
+            if len(self.g_failed) != 0:
+                self.c.warn(f"Failed Guilds:")
+                for guild in self.g_failed:
+                    self.c.warn(f"{guild['name']}", indent=2)
 
             self.c.info(f"Relationships:")
-            self.c.info(f"Friends: {self.c.clnt.maincol}{len(self.friends)}", indent=2)
-            self.c.info(f"Blocked: {self.c.clnt.maincol}{len(self.blocked)}", indent=2)
-            self.c.info(f"Incoming: {self.c.clnt.maincol}{len(self.incoming)}", indent=2)
-            self.c.info(f"Outgoing: {self.c.clnt.maincol}{len(self.outgoing)}", indent=2)
-            self.c.info(f"DM Historys: {self.c.clnt.maincol}{len(self.dm_historys)}", indent=2)
-            self.c.info(f"Time Elapsed: {self.c.clnt.maincol}{self._show_time(int(self.after - self.before))}")
-
-
-    
-    def _headers(self, method, superprop=False, debugoptions=False, discordlocale=False, authorization=False, origin=False, referer="https://discord.com/channels/@me", context=False):
-        headers = {
-            "Accept": "*/*",
-            "Accept-Encoding": "gzip, deflate, br",
-            "Accept-Language": "en-US,en;q=0.9",
-            "Cookie": "locale=en-GB",
-            "Referer": referer,
-            "Sec-Ch-Ua": '" Not A;Brand";v="99", "Chromium";v="100", "Google Chrome";v="100"',
-            "Sec-Ch-Ua-Mobile": "?0",
-            "Sec-Ch-Ua-Platform": '"Windows"',
-            "Sec-Fetch-Dest": "empty",
-            "Sec-Fetch-Mode": "cors",
-            "Sec-Fetch-Site": "same-origin",
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36"
-        }
-
-        if referer is False:
-            del headers["Referer"]
-        
-        if method != "get":
-            headers["Content-Type"] = "application/json"
-            headers["Origin"] = "https://discord.com"
-
-        if authorization is True:
-            headers["Authorization"] = self.token
-        if origin != False:
-            headers["Origin"] = origin
-        if debugoptions is True:
-            headers["X-Debug-Options"] = "bugReporterEnabled"
-        if discordlocale is True:
-            headers["X-Discord-Locale"] = "en-US"
-        if superprop is True:
-            headers["X-Super-Properties"] = "eyJvcyI6IldpbmRvd3MiLCJicm93c2VyIjoiQ2hyb21lIiwiZGV2aWNlIjoiIiwic3lzdGVtX2xvY2FsZSI6ImVuLVVTIiwiYnJvd3Nlcl91c2VyX2FnZW50IjoiTW96aWxsYS81LjAgKFdpbmRvd3MgTlQgMTAuMDsgV2luNjQ7IHg2NCkgQXBwbGVXZWJLaXQvNTM3LjM2IChLSFRNTCwgbGlrZSBHZWNrbykgQ2hyb21lLzEwMC4wLjQ4OTYuMTI3IFNhZmFyaS81MzcuMzYiLCJicm93c2VyX3ZlcnNpb24iOiIxMDAuMC40ODk2LjEyNyIsIm9zX3ZlcnNpb24iOiIxMCIsInJlZmVycmVyIjoiIiwicmVmZXJyaW5nX2RvbWFpbiI6IiIsInJlZmVycmVyX2N1cnJlbnQiOiIiLCJyZWZlcnJpbmdfZG9tYWluX2N1cnJlbnQiOiIiLCJyZWxlYXNlX2NoYW5uZWwiOiJzdGFibGUiLCJjbGllbnRfYnVpbGRfbnVtYmVyIjoxMjY0NjIsImNsaWVudF9ldmVudF9zb3VyY2UiOm51bGx9"
-        if context != False:
-            headers["X-Context-Properties"] = context
-        
-        keyssorted = sorted(headers.keys(), key=lambda x:x.lower())
-        newheaders={}
-        for key in keyssorted:
-            newheaders[key] = headers[key]
-
-        return headers
+            self.c.info(f"Friends: {colours['main_colour']}{len(self.backup_data['friends'])}", indent=2)
+            self.c.info(f"Blocked: {colours['main_colour']}{len(self.backup_data['blocked'])}", indent=2)
+            self.c.info(f"Incoming: {colours['main_colour']}{len(self.backup_data['incoming'])}", indent=2)
+            self.c.info(f"Outgoing: {colours['main_colour']}{len(self.backup_data['outgoing'])}", indent=2)
+            self.c.info(f"DM Historys: {colours['main_colour']}{len(self.dm_historys)}", indent=2)
+            self.c.info(f"Time Elapsed: {colours['main_colour']}{self._show_time(int(self.after - self.before))}")
     
     def _reverse_snowflake(self, snfk):
         try:
@@ -141,30 +105,30 @@ class backup():
         self.backup_data["discriminator"] = str(self.user_me['discriminator'])
         self.backup_data["id"] = str(self.user_me["id"])
         self.backup_data["bio"] = self.user_me["bio"]
-        self.c.success(f"Backed up: {self.c.clnt.maincol}User Info")
+        self.c.success(f"Backed up: {colours['main_colour']}User Info")
 
-        r = requests.get(f"https://cdn.discordapp.com/avatars/{self.backup_data['id']}/{self.user_me['avatar']}")
+        r = request_client.get(f"https://cdn.discordapp.com/avatars/{self.backup_data['id']}/{self.user_me['avatar']}")
         base64_bytes = base64.b64encode(r.content)
         base64_message = base64_bytes.decode('ascii')
         self.backup_data["avatar-bytes"] = base64_message
-        self.c.success(f"Backed up: {self.c.clnt.maincol}Avatar")
+        self.c.success(f"Backed up: {colours['main_colour']}Avatar")
 
-        r = requests.get(f"https://cdn.discordapp.com/banners/{self.backup_data['id']}/{self.user_me['banner']}")
+        r = request_client.get(f"https://cdn.discordapp.com/banners/{self.backup_data['id']}/{self.user_me['banner']}")
         base64_bytes = base64.b64encode(r.content)
         base64_message = base64_bytes.decode('ascii')
         self.backup_data["banner-bytes"] = base64_message
-        self.c.success(f"Backed up: {self.c.clnt.maincol}Banner")
+        self.c.success(f"Backed up: {colours['main_colour']}Banner")
 
-        r = requests.get(f"https://discord.com/api/v9/users/@me/settings", headers=self._headers("get", debugoptions=True, discordlocale=True, superprop=True, authorization=True))
+        r = request_client.get(f"https://discord.com/api/v9/users/@me/settings", headers=build_headers("get", debugoptions=True, discordlocale=True, superprop=True, authorization=self.token, timezone=True))
         settings = r.json()
         self.backup_data["guild_folders"] = settings["guild_folders"]
-        self.c.success(f"Backed up: {self.c.clnt.maincol}Guild Folders")
+        self.c.success(f"Backed up: {colours['main_colour']}Guild Folders")
     
     def group_chats(self):
         while True:
-            r = requests.get(f"https://discord.com/api/v9/users/@me/channels", headers=self._headers("get", debugoptions=True, discordlocale=True, superprop=True, authorization=True))
+            r = request_client.get(f"https://discord.com/api/v9/users/@me/channels", headers=build_headers("get", debugoptions=True, discordlocale=True, superprop=True, authorization=self.token, timezone=True))
             if "You are being rate limited." in r.text:
-                self.c.warn(f"Rate Limited: {self.c.clnt.maincol}{r.json()['retry_after']} seconds{self.c.clnt.white}.")
+                self.c.warn(f"Rate Limited: {colours['main_colour']}{r.json()['retry_after']} seconds{colours['white']}.")
                 time.sleep((int(r.json()["retry_after"]) + 0.3))
             else:
                 break
@@ -182,30 +146,28 @@ class backup():
         self.backup_data['group-chats'] = []
 
         for channel in channels:
-            self.c.info(f"[{self.c.clnt.maincol}{channels.index(channel) + 1}/{len(channels)}{self.c.clnt.white}] Creating invite for {self.c.clnt.maincol}{channel['name']}{self.c.clnt.white} ({self.c.clnt.maincol}{len(channel['recipients'])} users{self.c.clnt.white}):")
+            self.c.info(f"[{colours['main_colour']}{channels.index(channel) + 1}/{len(channels)}{colours['white']}] Creating invite for {colours['main_colour']}{channel['name']}{colours['white']} ({colours['main_colour']}{len(channel['recipients'])} users{colours['white']}):")
             time_since_last_msg = time.time() - self._reverse_snowflake(channel['last_message_id'])
             
-            if int(self.c.clnt.cfg.group_chat_msg) != 0:
-                if time_since_last_msg > int(self.c.clnt.cfg.group_chat_msg):
-                    self.c.warn(f"Group Chat too old ({self.c.clnt.maincol}{self._show_time(time_since_last_msg)} since last message{self.c.clnt.white})", indent=2)
+            if int(config.group_chat_msg) != 0:
+                if time_since_last_msg > int(config.group_chat_msg):
+                    self.c.warn(f"Group Chat too old ({colours['main_colour']}{self._show_time(time_since_last_msg)} since last message{colours['white']})", indent=2)
                     continue
             
             while True:
-                r = requests.post(f"https://discord.com/api/v9/channels/{channel['id']}/invites", 
-                
-                json={
-                    "max_age": 604800
-                }, 
-                
-                headers=self._headers("post", debugoptions=True, discordlocale=True, superprop=True, authorization=True)
+                r = request_client.post(f"https://discord.com/api/v9/channels/{channel['id']}/invites", 
+                    json={
+                        "max_age": 604800
+                    }, 
+                    headers=build_headers("post", debugoptions=True, discordlocale=True, superprop=True, authorization=self.token)
                 )
                 if "You are being rate limited." in r.text or r.status_code == 429:
-                    self.c.warn(f"Rate Limited: {self.c.clnt.maincol}{(r.json()['retry_after'])} seconds{self.c.clnt.white}.", indent=2)
+                    self.c.warn(f"Rate Limited: {colours['main_colour']}{(r.json()['retry_after'])} seconds{colours['white']}.", indent=2)
                     time.sleep((r.json()["retry_after"]) + 0.3)
                 else:
                     if r.status_code == 200:
                         code = r.json()['code']
-                        self.c.success(f"Created Invite | {self.c.clnt.maincol}{code}", indent=2)
+                        self.c.success(f"Created Invite | {colours['main_colour']}{code}", indent=2)
                         self.backup_data['group-chats'].append({"name": channel['name'], "id": channel['id'], "invite-code": r.json()['code']})
                         self.gc_success += 1
                         break
@@ -219,41 +181,37 @@ class backup():
 
     def relationships(self):
         while True:
-            r = requests.get(f"https://discord.com/api/v9/users/@me/relationships", headers=self._headers("get", debugoptions=True, discordlocale=True, superprop=True, authorization=True))
+            r = request_client.get(f"https://discord.com/api/v9/users/@me/relationships", headers=build_headers("get", debugoptions=True, discordlocale=True, superprop=True, authorization=self.token, timezone=True))
             if "You are being rate limited." in r.text:
-                self.c.warn(f"Rate Limited: {self.c.clnt.maincol}{r.json()['retry_after']} seconds{self.c.clnt.white}.")
+                self.c.warn(f"Rate Limited: {colours['main_colour']}{r.json()['retry_after']} seconds{colours['white']}.")
                 time.sleep((int(r.json()["retry_after"]) + 0.3))
             else:
                 break
         friend_data = r.json()
 
-        self.friends = []
-        self.blocked = []
-        self.outgoing = []
-        self.incoming = []
+        relationship_map = {
+            1: [],
+            2: [],
+            3: [],
+            4: []
+        }
 
         for user in friend_data:
-            if user["type"] == 1:
-                self.friends.append(user["id"])
-            elif user["type"] == 2:
-                self.blocked.append(user["id"])
-            elif user["type"] == 3:
-                self.incoming.append(user["id"])
-            elif user["type"] == 4:
-                self.outgoing.append(user["id"])
+            if user["type"] in relationship_map:
+                relationship_map[user["type"]].append(user["id"])
 
-        self.backup_data["friends"] = self.friends
-        self.backup_data["blocked"] = self.blocked
-        self.backup_data["incoming"] = self.incoming
-        self.backup_data["outgoing"] = self.outgoing
+        self.backup_data["friends"] = relationship_map[1]
+        self.backup_data["blocked"] = relationship_map[2]
+        self.backup_data["incoming"] = relationship_map[3]
+        self.backup_data["outgoing"] = relationship_map[4]
 
-        self.c.success(f"Backed up: {self.c.clnt.maincol}Relationships")
+        self.c.success(f"Backed up: {colours['main_colour']}Relationships")
 
     def _get_invite(self, guild):
         while True:
-            r = requests.get(f"https://discord.com/api/v9/guilds/{guild['id']}/channels", headers=self._headers("get", debugoptions=True, discordlocale=True, superprop=True, authorization=True))
+            r = request_client.get(f"https://discord.com/api/v9/guilds/{guild['id']}/channels", headers=build_headers("get", debugoptions=True, discordlocale=True, superprop=True, authorization=self.token, timezone=True))
             if "You are being rate limited." in r.text:
-                self.c.warn(f"Rate Limited: {self.c.clnt.maincol}{(r.json()['retry_after'])} seconds{self.c.clnt.white}.", indent=2)
+                self.c.warn(f"Rate Limited: {colours['main_colour']}{(r.json()['retry_after'])} seconds{colours['white']}.", indent=2)
                 time.sleep((r.json()["retry_after"]) + 0.3)
             else:
                 break
@@ -271,14 +229,14 @@ class backup():
                 channels.remove(channel)
 
         for channel in channels:
-            if done != False or error >= retries:
+            if done is not False or error >= retries:
                 break
             for word in words:
-                if done != False or error >= retries:
+                if done is not False or error >= retries:
                     break
                 if word in channel['name']:
                     while True:
-                        r = requests.post(f"https://discord.com/api/v9/channels/{channel['id']}/invites", 
+                        r = request_client.post(f"https://discord.com/api/v9/channels/{channel['id']}/invites", 
                         
                         json={
                             "max_age": 0,
@@ -286,19 +244,19 @@ class backup():
                             "temporary": False
                         }, 
                         
-                        headers=self._headers("post", debugoptions=True, discordlocale=True, superprop=True, authorization=True)
+                        headers=build_headers("post", debugoptions=True, discordlocale=True, superprop=True, authorization=self.token, timezone=True)
                         )
                         if "You are being rate limited." in r.text or r.status_code == 429:
-                            self.c.warn(f"Rate Limited: {self.c.clnt.maincol}{(r.json()['retry_after'])} seconds{self.c.clnt.white}.", indent=2)
+                            self.c.warn(f"Rate Limited: {colours['main_colour']}{(r.json()['retry_after'])} seconds{colours['white']}.", indent=2)
                             time.sleep((r.json()["retry_after"]) + 0.3)
                         else:
                             if r.status_code == 200:
                                 done = code = r.json()['code']
-                                self.c.success(f"Created Invite in {self.c.clnt.maincol}#{channel['name']}{self.c.clnt.white} | {self.c.clnt.maincol}{code}", indent=2)
+                                self.c.success(f"Created Invite in {colours['main_colour']}#{channel['name']}{colours['white']} | {colours['main_colour']}{code}", indent=2)
                                 break
                             else:
                                 error += 1
-                                self.c.fail(f"Can't Create Invite in {self.c.clnt.maincol}#{channel['name']}{self.c.clnt.white} ({self.c.clnt.maincol}{error}/3{self.c.clnt.white})", indent=2)
+                                self.c.fail(f"Can't Create Invite in {colours['main_colour']}#{channel['name']}{colours['white']} ({colours['main_colour']}{error}/3{colours['white']})", indent=2)
                                 break
         
         if done is False:
@@ -306,7 +264,7 @@ class backup():
                 if done != False or error >= retries:
                     break
                 while True:
-                    r = requests.post(f"https://discord.com/api/v9/channels/{channel['id']}/invites", 
+                    r = request_client.post(f"https://discord.com/api/v9/channels/{channel['id']}/invites", 
                         
                         json={
                             "max_age": 0,
@@ -314,24 +272,24 @@ class backup():
                             "temporary": False
                         }, 
                         
-                        headers=self._headers("post", debugoptions=True, discordlocale=True, superprop=True, authorization=True)
+                        headers=build_headers("post", debugoptions=True, discordlocale=True, superprop=True, authorization=self.token)
                     )
                     if "You are being rate limited." in r.text or r.status_code == 429:
-                        self.c.warn(f"Rate Limited: {self.c.clnt.maincol}{(r.json()['retry_after'])} seconds{self.c.clnt.white}.", indent=2)
+                        self.c.warn(f"Rate Limited: {colours['main_colour']}{(r.json()['retry_after'])} seconds{colours['white']}.", indent=2)
                         time.sleep((r.json()["retry_after"]) + 0.3)
                     else:
                         if r.status_code == 200:
                             done = code = r.json()['code']
-                            self.c.success(f"Created Invite in {self.c.clnt.maincol}#{channel['name']}{self.c.clnt.white} | {self.c.clnt.maincol}{code}", indent=2)
+                            self.c.success(f"Created Invite in {colours['main_colour']}#{channel['name']}{colours['white']} | {colours['main_colour']}{code}", indent=2)
                             break
                         else:
                             error += 1
-                            self.c.fail(f"Can't Create Invite in {self.c.clnt.maincol}#{channel['name']} {self.c.clnt.white}({self.c.clnt.maincol}{error}/3{self.c.clnt.white})", indent=2)
+                            self.c.fail(f"Can't Create Invite in {colours['main_colour']}#{channel['name']} {colours['white']}({colours['main_colour']}{error}/3{colours['white']})", indent=2)
                             break
         return code, done
 
     def guilds(self):
-        r = requests.get(f"https://discord.com/api/v9/users/@me/guilds", headers=self._headers("get", debugoptions=True, discordlocale=True, superprop=True, authorization=True))
+        r = request_client.get(f"https://discord.com/api/v9/users/@me/guilds", headers=build_headers("get", debugoptions=True, discordlocale=True, superprop=True, authorization=self.token, timezone=True))
         guilds = r.json()
 
         self.guild_list = []
@@ -340,12 +298,12 @@ class backup():
 
 
         for guild in guilds:
-            self.c.info(f"[{self.c.clnt.maincol}{guilds.index(guild) + 1}/{len(guilds)}{self.c.clnt.white}] Creating invite for {self.c.clnt.maincol}{guild['name']}{self.c.clnt.white}:")
+            self.c.info(f"[{colours['main_colour']}{guilds.index(guild) + 1}/{len(guilds)}{colours['white']}] Creating invite for {colours['main_colour']}{guild['name']}{colours['white']}:")
             if "VANITY_URL" in guild["features"]:
                 while True:
-                    r = requests.get(f"https://discord.com/api/v9/guilds/{guild['id']}", headers=self._headers("get", debugoptions=True, discordlocale=True, superprop=True, authorization=True))
+                    r = request_client.get(f"https://discord.com/api/v9/guilds/{guild['id']}", headers=build_headers("get", debugoptions=True, discordlocale=True, superprop=True, authorization=self.token, timezone=True))
                     if "You are being rate limited." in r.text:
-                        self.c.warn(f"Rate Limited: {self.c.clnt.maincol}{(r.json()['retry_after'])} seconds{self.c.clnt.white}.", indent=2)
+                        self.c.warn(f"Rate Limited: {colours['main_colour']}{(r.json()['retry_after'])} seconds{colours['white']}.", indent=2)
                         time.sleep((r.json()["retry_after"]) + 0.3)
                     else:
                         break
@@ -357,7 +315,7 @@ class backup():
                     if code == None:
                         code, done = self._get_invite(guild)
                     else:
-                        self.c.success(f"Using {self.c.clnt.maincol}Vanity Url{self.c.clnt.white} as invite. | {self.c.clnt.maincol}{code}", indent=2)
+                        self.c.success(f"Using {colours['main_colour']}Vanity Url{colours['white']} as invite. | {colours['main_colour']}{code}", indent=2)
                         done = True
 
             else:
@@ -404,14 +362,14 @@ class backup():
         self.backup_data['dm-history'] = dms
         self.dm_historys = dms
 
-        self.c.success(f"Backed up: {self.c.clnt.maincol}Users DMed")
+        self.c.success(f"Backed up: {colours['main_colour']}Users DMed")
     
     def get_favourite_gifs(self):
-        r = requests.get('https://discord.com/api/v9/users/@me/settings-proto/2', headers=self._headers("get", debugoptions=True, discordlocale=True, superprop=True, authorization=True))
+        r = request_client.get('https://discord.com/api/v9/users/@me/settings-proto/2', headers=build_headers("get", debugoptions=True, discordlocale=True, superprop=True, authorization=self.token, timezone=True))
         if r.status_code == 200:
             self.backup_data['settings'] = r.json()['settings']
-            self.c.success(f"Backed up: {self.c.clnt.maincol}Favourited GIFs")
+            self.c.success(f"Backed up: {colours['main_colour']}Favourited GIFs")
             return 'Done'
         else:
-            self.c.fail(f"Couldn't back up: {self.c.clnt.maincol}Favourited GIFs ({r.status_code})")
+            self.c.fail(f"Couldn't back up: {colours['main_colour']}Favourited GIFs ({r.status_code})")
             return 'Failed'

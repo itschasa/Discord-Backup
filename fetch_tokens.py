@@ -5,9 +5,16 @@
 # License v3.0. A copy of this license is available at
 # https://www.gnu.org/licenses/agpl-3.0.en.html
 
-import os, re, requests, base64, json, brotli
+import os
+import re
+import base64
+import json
+import brotli
 from Crypto.Cipher import AES
 from win32crypt import CryptUnprotectData
+
+from client_info import build_headers
+from main import request_client
 
 def fetch():
     """[[token, user#tag], ...] """
@@ -37,33 +44,12 @@ def fetch():
         
         return decryption_key
     
-    def getheaders(token):
-        headers = {
-            "accept": "*/*",
-            "accept-encoding": "gzip, deflate, br",
-            "accept-language": "en-US,en;q=0.9",
-            "authorization": token,
-            "cookie": "locale=en-GB",
-            "referer": "https://discord.com/channels/@me",
-            "sec-ch-ua": '" Not A;Brand";v="99", "Chromium";v="100", "Google Chrome";v="100"',
-            "sec-ch-ua-mobile": "?0",
-            "sec-ch-ua-platform": '"Windows"',
-            "sec-fetch-dest": "empty",
-            "sec-fetch-mode": "cors",
-            "sec-fetch-site": "same-origin",
-            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36",
-            "x-debug-options": "bugReporterEnabled",
-            "x-discord-locale": "en-GB",
-            "x-super-properties": "eyJvcyI6IldpbmRvd3MiLCJicm93c2VyIjoiQ2hyb21lIiwiZGV2aWNlIjoiIiwic3lzdGVtX2xvY2FsZSI6ImVuLVVTIiwiYnJvd3Nlcl91c2VyX2FnZW50IjoiTW96aWxsYS81LjAgKFdpbmRvd3MgTlQgMTAuMDsgV2luNjQ7IHg2NCkgQXBwbGVXZWJLaXQvNTM3LjM2IChLSFRNTCwgbGlrZSBHZWNrbykgQ2hyb21lLzEwMC4wLjQ4OTYuMTI3IFNhZmFyaS81MzcuMzYiLCJicm93c2VyX3ZlcnNpb24iOiIxMDAuMC40ODk2LjEyNyIsIm9zX3ZlcnNpb24iOiIxMCIsInJlZmVycmVyIjoiIiwicmVmZXJyaW5nX2RvbWFpbiI6IiIsInJlZmVycmVyX2N1cnJlbnQiOiIiLCJyZWZlcnJpbmdfZG9tYWluX2N1cnJlbnQiOiIiLCJyZWxlYXNlX2NoYW5uZWwiOiJzdGFibGUiLCJjbGllbnRfYnVpbGRfbnVtYmVyIjoxMjY0NjIsImNsaWVudF9ldmVudF9zb3VyY2UiOm51bGx9"
-        }
-        return headers
-    
     def reqJSON(req) -> dict:
         try: return req.json()
         except: return json.loads(brotli.decompress(req.content).decode("utf-8"))
     
     def check_token(tkn, name, ids:list, to_return_tokens:list):
-        r = requests.get("https://discord.com/api/v9/users/@me", headers=getheaders(tkn))
+        r = request_client.get("https://discord.com/api/v9/users/@me", headers=build_headers("get", superprop=True, debugoptions=True, discordlocale=True, authorization=tkn, timezone=True))
         if r.status_code == 200:
             tknid = base64.b64decode((tkn.split('.')[0] + '===').encode('ascii')).decode('ascii')
             if (tknid+name) not in ids:
