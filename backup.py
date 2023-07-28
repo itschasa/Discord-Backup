@@ -219,7 +219,7 @@ class backup():
         channels = r.json()
 
         invite_payload = {
-            'max_age': 2592000 if 'COMMUNITY' in guild['features'] else 0,
+            'max_age': 2592000 if 'COMMUNITY' not in guild['features'] else 0,
             'max_uses': 0,
             'target_type': None,
             'target_user_id': None,
