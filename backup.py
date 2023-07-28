@@ -218,9 +218,20 @@ class backup():
         
         channels = r.json()
 
+        invite_payload = {
+            'max_age': 2592000 if 'COMMUNITY' in guild['features'] else 0,
+            'max_uses': 0,
+            'target_type': None,
+            'target_user_id': None,
+            'temporary': False,
+            'validate': None,
+        }
+
+        invite_headers = build_headers("post", debugoptions=True, discordlocale=True, superprop=True, authorization=self.token, timezone=True)
+
         words = ["general", "rules", "news", "txt"]
         allowed_channel_types = [0,2,3,5,13]
-        done = code = False
+        done, code = False, False
         error = 0
         retries = 3
 
@@ -237,14 +248,8 @@ class backup():
                 if word in channel['name']:
                     while True:
                         r = request_client.post(f"https://discord.com/api/v9/channels/{channel['id']}/invites", 
-                        
-                        json={
-                            "max_age": 0,
-                            "max-uses": 0,
-                            "temporary": False
-                        }, 
-                        
-                        headers=build_headers("post", debugoptions=True, discordlocale=True, superprop=True, authorization=self.token, timezone=True)
+                            json = invite_payload, 
+                            headers = invite_headers
                         )
                         if "You are being rate limited." in r.text or r.status_code == 429:
                             self.c.warn(f"Rate Limited: {colours['main_colour']}{(r.json()['retry_after'])} seconds{colours['white']}.", indent=2)
