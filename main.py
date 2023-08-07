@@ -5,7 +5,7 @@
 # License v3.0. A copy of this license is available at
 # https://www.gnu.org/licenses/agpl-3.0.en.html
 
-app_version = "v1.2.2"
+app_version = "v1.2.3"
 
 import time
 import sys
@@ -19,7 +19,10 @@ import tls_client
 from colorama import Fore
 
 from client_info import request_client_identifier
-request_client = tls_client.Session(client_identifier=request_client_identifier)
+request_client = tls_client.Session(
+    client_identifier=request_client_identifier,
+    random_tls_extension_order=True
+)
 
 # change cwd (for auto-backup)
 try: cwd = sys.argv[2]
