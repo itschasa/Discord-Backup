@@ -7,3 +7,4 @@ colorama
 Brotli
 easyyaml
 tls-client>=0.2.1
+easy_gui
