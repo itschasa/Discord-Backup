@@ -106,6 +106,21 @@ class restore():
                 print(response.json())
                 return False
 
+    @staticmethod
+    def create_guild(token, payload, verbose=False):
+        req = request_client.post("https://discord.com/api/v9/guilds",
+            headers=build_headers("post", debugoptions=True, discordlocale=True, superprop=True, authorization=token, timezone=True, origin="https://discord.com"),
+            json=payload
+        )
+        
+        try: guild_id = req.json()['id']
+        except:
+            if verbose:
+                print(f"Failed to create guild: {req.status_code}")
+                print(req.text)
+            return None, req
+        else: return guild_id, req
+
     def servers(self):
         channels = [
             {
@@ -166,13 +181,9 @@ class restore():
             "guild_template_code": "2TffvPucqHkN",
         }
 
-        req = request_client.post("https://discord.com/api/v9/guilds",
-            headers=build_headers("post", debugoptions=True, discordlocale=True, superprop=True, authorization=self.token, timezone=True, origin="https://discord.com"),
-            json=payload
-        )
+        guild_id, req = self.create_guild(self.token, payload)
         
-        try: guild_id = req.json()['id']
-        except:
+        if not guild_id:
             self.c.fail(f"Failed to create guild: {req.status_code}")
             self.c.fail(req.text)
             self.fatal_error = "Failed to create guild"

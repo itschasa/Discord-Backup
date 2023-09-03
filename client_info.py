@@ -19,21 +19,11 @@ request_client_identifier = "chrome_113" # tls_client uses this to determine wha
 from main import request_client
 
 def get_client_build_number():
-    client_request = request_client.get(f'https://discord.com/app', headers={'User-Agent': 'Mozilla/5.0'}).text
-    jsFileRegex = re.compile(r'([a-zA-z0-9]+)\.js', re.I)
-    for asset in jsFileRegex.findall(client_request)[::-1]:
-        if asset != "invisible":
-            break
-    
-    assetFileRequest = request_client.get(f'https://discord.com/assets/{asset}.js', headers={'User-Agent': 'Mozilla/5.0'}).text
-    try:
-        build_info_regex = re.compile(r'Build Number: "\)\.concat\("([0-9]{4,8})"')
-        build_info_strings = build_info_regex.findall(assetFileRequest)
-        build_num = build_info_strings[0]
-    except (RuntimeError, TypeError, NameError):
-        raise Exception(f"couldn't fetch discord build num from {asset}.js")
-    
-    return int(build_num)
+    res = request_client.get("https://discord.com/login").text
+    file_with_build_num = 'https://discord.com/assets/' + re.compile(r'assets/+([a-z0-9]+)\.js').findall(res)[-2]+'.js'
+    req_file_build = request_client.get(file_with_build_num).text
+    index_of_build_num = req_file_build.find('buildNumber')+24
+    return int(req_file_build[index_of_build_num:index_of_build_num+6])
 
 discord_build = get_client_build_number()
 super_properties = {

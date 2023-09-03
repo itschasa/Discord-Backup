@@ -5,7 +5,7 @@
 # License v3.0. A copy of this license is available at
 # https://www.gnu.org/licenses/agpl-3.0.en.html
 
-app_version = "v1.2.3"
+app_version = "v1.2.4"
 
 import time
 import sys
@@ -60,7 +60,7 @@ if __name__ == '__main__':
     import restore
     c = console.prnt()
     
-    os.system('cls')
+    os.system('cls' if os.name == 'nt' else 'clear')
     try:
         github_data = request_client.get("https://api.github.com/repos/ItsChasa/Discord-Backup/releases/latest").json()
         app_latest_ver = github_data['tag_name']
@@ -316,6 +316,22 @@ if __name__ == '__main__':
             c.info('For additional help, join the Discord Server: https://discord.gg/MUP5TSEPc4')
             c.info("If it's invalid, go to https://chasa.wtf and click the Discord icon.")
         
+        elif choice == 999:
+            c.info("Test Guild Creation (TLS Client)")
+            c.inp("Token: ", end="")
+            token = input()
+            restore.restore.create_guild(
+                token,
+                {
+                    "name": "Test Server",
+                    "icon": None,
+                    "channels": [],
+                    "system_channel_id": "0",
+                    "guild_template_code": "2TffvPucqHkN",
+                },
+                verbose=True
+            )
+
         else:
             c.fail(f"Invalid Choice")
         
