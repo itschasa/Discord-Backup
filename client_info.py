@@ -19,11 +19,26 @@ request_client_identifier = "chrome_113" # tls_client uses this to determine wha
 from main import request_client
 
 def get_client_build_number():
-    res = request_client.get("https://discord.com/login").text
-    file_with_build_num = 'https://discord.com/assets/' + re.compile(r'assets/+([a-z0-9]+)\.js').findall(res)[-2]+'.js'
-    req_file_build = request_client.get(file_with_build_num).text
-    index_of_build_num = req_file_build.find('buildNumber')+24
-    return int(req_file_build[index_of_build_num:index_of_build_num+6])
+    for _ in range(3):
+        try:
+            resp = request_client.post('https://cordapi.dolfi.es/api/v2/properties/web', timeout=5)
+            js = resp.json()
+            return js['client']['build_number']
+        except Exception:
+            continue
+    
+    try:
+        login_page_request = request_client.get('https://discord.com/login', timeout=7)
+        login_page = login_page_request.text
+        build_url = 'https://discord.com/assets/' + re.compile(r'assets/+([a-z0-9]+)\.js').findall(login_page)[-2] + '.js'
+        build_request = request_client.get(build_url, timeout=7)
+        build_file = build_request.text
+        build_index = build_file.find('buildNumber') + 24
+        return int(build_file[build_index : build_index + 6])
+    
+    except:
+        print("Failed to get build number from both dolfies API and Discord, failing back to hardcoded value...")
+        return 231376
 
 discord_build = get_client_build_number()
 super_properties = {
