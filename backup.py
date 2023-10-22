@@ -107,13 +107,13 @@ class backup():
         self.backup_data["bio"] = self.user_me["bio"]
         self.c.success(f"Backed up: {colours['main_colour']}User Info")
 
-        r = request_client.get(f"https://cdn.discordapp.com/avatars/{self.backup_data['id']}/{self.user_me['avatar']}")
+        r = request_client.get(f"https://cdn.discordapp.com/avatars/{self.backup_data['id']}/{self.user_me['avatar']}", headers=build_headers("get"))
         base64_bytes = base64.b64encode(r.content)
         base64_message = base64_bytes.decode('ascii')
         self.backup_data["avatar-bytes"] = base64_message
         self.c.success(f"Backed up: {colours['main_colour']}Avatar")
 
-        r = request_client.get(f"https://cdn.discordapp.com/banners/{self.backup_data['id']}/{self.user_me['banner']}")
+        r = request_client.get(f"https://cdn.discordapp.com/banners/{self.backup_data['id']}/{self.user_me['banner']}", headers=build_headers("get"))
         base64_bytes = base64.b64encode(r.content)
         base64_message = base64_bytes.decode('ascii')
         self.backup_data["banner-bytes"] = base64_message
@@ -233,7 +233,7 @@ class backup():
         allowed_channel_types = [0,2,3,5,13]
         done, code = False, False
         error = 0
-        retries = 3
+        retries = 5
 
         for channel in channels:
             if channel["type"] not in allowed_channel_types:
@@ -261,7 +261,7 @@ class backup():
                                 break
                             else:
                                 error += 1
-                                self.c.fail(f"Can't Create Invite in {colours['main_colour']}#{channel['name']}{colours['white']} ({colours['main_colour']}{error}/3{colours['white']})", indent=2)
+                                self.c.fail(f"Can't Create Invite in {colours['main_colour']}#{channel['name']}{colours['white']} ({colours['main_colour']}{error}/{retries}{colours['white']})", indent=2)
                                 break
         
         if done is False:
@@ -289,7 +289,7 @@ class backup():
                             break
                         else:
                             error += 1
-                            self.c.fail(f"Can't Create Invite in {colours['main_colour']}#{channel['name']} {colours['white']}({colours['main_colour']}{error}/3{colours['white']})", indent=2)
+                            self.c.fail(f"Can't Create Invite in {colours['main_colour']}#{channel['name']} {colours['white']}({colours['main_colour']}{error}/{retries}{colours['white']})", indent=2)
                             break
         return code, done
 

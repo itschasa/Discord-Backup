@@ -76,7 +76,7 @@ def build_headers(
 ):
     headers = {
         "Accept": "*/*",
-        "Accept-Encoding": "gzip, deflate, br",
+        "Accept-Encoding": "identity",
         "Accept-Language": "en-US,en;q=0.9",
         "Cookie": "locale=en-GB",
         "Referer": referer,
