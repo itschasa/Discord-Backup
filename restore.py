@@ -24,10 +24,10 @@ class restore():
         self.restore_data = restore_data
 
         if self.restore_data['version'] != version:
-            self.c.warn(f"This Backup wasn't done on the same version of this software. (backup: {self.restore_data['version']}, current version:{version})")
+            self.c.warn(f"This Backup wasn't done on the same version of this software. (backup: {self.restore_data['version']}, current version: {version})")
             self.c.warn(f"This could lead to unexpected errors or side effects.")
             self.c.warn(f"It's recommended you change your software version to the same version as the backup was done on before continuing.")
-            self.c.inp(f"Are you sure you want to continue? ({colours['main_colour']}y/n{colours['white']})", end=f"{colours['white']}")
+            self.c.inp(f"Are you sure you want to continue? ({colours['main_colour']}y/n{colours['white']}) ", end=f"{colours['white']}")
             warning_continue = input()
             if warning_continue != "y":
                 self.fatal_error = "Chose to stop restore"
@@ -388,6 +388,7 @@ class restore():
                 
                 headers={
                     'Authorization' : f'Bot {self.bot_token}',
+                    "Accept-Encoding": "identify",
                     'User-Agent': 'discord.py'
                 }
             )

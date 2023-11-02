@@ -5,7 +5,7 @@
 # License v3.0. A copy of this license is available at
 # https://www.gnu.org/licenses/agpl-3.0.en.html
 
-app_version = "v1.2.7"
+app_version = "v1.2.8"
 
 import time
 import sys
