@@ -22,10 +22,10 @@ from main import request_client
 
 def get_client_build_number():
     try:
-        login_page_request = request_client.get('https://discord.com/login')
+        login_page_request = request_client.get('https://discord.com/login', headers={"Accept-Encoding": "identity"})
         login_page = login_page_request.text
         build_url = 'https://discord.com/assets/' + re.compile(r'assets/+([a-z0-9]+)\.js').findall(login_page)[-2] + '.js'
-        build_request = request_client.get(build_url)
+        build_request = request_client.get(build_url, headers={"Accept-Encoding": "identity"})
         build_nums = re.findall(r'(?i)Build ?Number:? ?"\)\.concat\("([0-9]*)"', build_request.text)
         return int(build_nums[0])
     
