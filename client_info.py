@@ -9,6 +9,7 @@ import base64
 import re
 import json
 import traceback
+import time
 
 # browser data
 user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36"
@@ -20,27 +21,18 @@ request_client_identifier = "chrome_113" # tls_client uses this to determine wha
 from main import request_client
 
 def get_client_build_number():
-    for _ in range(3):
-        try:
-            resp = request_client.post('https://cordapi.dolfi.es/api/v2/properties/web')
-            js = resp.json()
-            return js['properties']['client_build_number']
-        except Exception:
-            traceback.print_exc()
-            continue
-    
     try:
         login_page_request = request_client.get('https://discord.com/login')
         login_page = login_page_request.text
         build_url = 'https://discord.com/assets/' + re.compile(r'assets/+([a-z0-9]+)\.js').findall(login_page)[-2] + '.js'
         build_request = request_client.get(build_url)
-        build_file = build_request.text
-        build_index = build_file.find('buildNumber') + 24
-        return int(build_file[build_index : build_index + 6])
+        build_nums = re.findall(r'(?i)Build ?Number:? ?"\)\.concat\("([0-9]*)"', build_request.text)
+        return int(build_nums[0])
     
     except:
         traceback.print_exc()
-        print("Failed to get build number from both dolfies API and Discord, failing back to hardcoded value...")
+        print("Failed to get build number from Discord, failing back to hardcoded value...")
+        time.sleep(2)
         return 231376
 
 discord_build = get_client_build_number()
