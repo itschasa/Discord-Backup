@@ -15,14 +15,9 @@ import json
 import ctypes
 from pathlib import Path
 from easygui import fileopenbox
-import tls_client
 from colorama import Fore
 
-from client_info import request_client_identifier
-request_client = tls_client.Session(
-    client_identifier=request_client_identifier,
-    random_tls_extension_order=True
-)
+from client_info import request_client, discord_build, discord_build_failback
 
 # change cwd (for auto-backup)
 try: cwd = sys.argv[2]
@@ -81,7 +76,8 @@ if __name__ == '__main__':
 > Made with {colours['main_colour']}<3{colours['white']} by {colours['main_colour']}chasa{colours['white']}
 > Github: {colours['main_colour']}https://github.com/itschasa/Discord-Backup{colours['white']}
 > Don't forget to {colours['yellow']}star{colours['white']} it!
-> Version: {colours['main_colour']}{app_version}""")
+> Version: {colours['main_colour']}{app_version}{colours['white']}
+> Discord Build: {colours['main_colour']}{colours['main_colour']}{discord_build}{colours['white']}{'' if not discord_build_failback else ' (failback)'}""")
         
     try: ctypes.windll.kernel32.SetConsoleTitleW(f"github.com/itschasa/Discord-Backup")
     except: pass
