@@ -26,29 +26,31 @@ The automation of Discord Accounts also known as self-bots is a violation of Dis
 ### Automatic
 These can be done by the program:
 - Backup Servers
-  - Save Server Invites
+  - Save Server Invites.
 - Backup DM History
-  - Save Users who have DMed you
+  - Save Users who have DMed you.
 - Backup Group Chats
-  - Save Invites to Group Chats
+  - Save Invites to Group Chats.
 - Backup Avatar, Banner and Bio
-  - Saves 1 .txt and 2 .gif files
+  - Saves 1 .txt and 2 .gif files.
 - Backup + Restore Server Folders
-  - Saves the Order, Colour and Name of your Folders
-- Backup + Restore Relationships
-  - Save Friends, Blocked, Outgoing and Incoming Friends
+  - Saves the Order, Colour and Name of your Folders.
+- Backup Relationships
+  - Save Friends, Blocked, Outgoing and Incoming Friends.
 - Auto-Backup on PC Startup
-  - On Startup, automatically backup your Discord Account
+  - On Startup, automatically backup your Discord Account.
 - Colour Customisation
-  - 12 different colours to choose from
+  - 12 different colours to choose from.
 ### Manual
 You will have to do this yourself:
 - Restore Servers
-  - You will have to join the Servers by clicking on an invite on Discord
+  - You will have to join the Servers by clicking on an invite on Discord.
 - Restore Group Chats
-  - You will have to join the Group Chats by clicking on an invite on Discord
+  - You will have to join the Group Chats by clicking on an invite on Discord.
 - Restore Avatar, Banner and Bio
-  - You will have to add these back through the User Profile menu
+  - You will have to add these back through the User Profile menu.
+- Restore Relationships
+  - You will have to click on the @ of each user and add them back manually.
 
 
 ## Installation
