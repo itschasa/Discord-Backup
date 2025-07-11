@@ -9,7 +9,7 @@
     <br>
     <img src="https://github.com/ItsChasa/Discord-Backup/blob/main/img/backup-demo.gif">
     <br>
-    <p><i>⭐ star the repo pls <3</i> | <a href="https://chasa.wtf/discord">Discord Server</a> | <a href="https://chasa.wtf/">Website</a></p>
+    <p><i>⭐ star the repo pls <3</i></p>
 </div>
 
 ## Disclaimer 
